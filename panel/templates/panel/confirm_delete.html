@@ -1,0 +1,19 @@
+{% extends 'panel/base.html' %}
+{% block content %}
+<div class="page-header">
+  <h1>Eliminar registro</h1>
+</div>
+
+<div class="form-card" style="max-width: 520px;">
+  <p style="font-size: 14px;">
+    ¿Estás seguro de eliminar el registro <strong>#{{ obj.id }}</strong> de <strong>{{ cfg.title }}</strong>?
+  </p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+      <a class="btn btn-ghost" href="{% url 'list' table %}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

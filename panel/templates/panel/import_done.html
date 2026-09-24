@@ -1,0 +1,15 @@
+{% extends 'panel/base.html' %}
+{% block content %}
+<div class="page-header">
+  <h1>Importación completada</h1>
+</div>
+<div class="form-card" style="max-width: 520px;">
+  <div class="alert alert-success">
+    Se importaron <strong>{{ result.inserted }}</strong> registros a la tabla <strong>{{ result.table }}</strong>.
+  </div>
+  <div class="form-actions">
+    <a class="btn btn-accent" href="{% url 'list' result.table %}">Ver tabla</a>
+    <a class="btn btn-ghost" href="{% url 'import' %}">Importar otro archivo</a>
+  </div>
+</div>
+{% endblock %}

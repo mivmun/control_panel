@@ -1,0 +1,12 @@
+{% extends 'panel/base.html' %}
+{% block content %}
+<div class="page-header">
+  <h1>Puestos Oficina</h1>
+  <div>
+    <a class="btn btn-ghost btn-sm" href="{% url 'plano_puestos_app' %}" target="_blank">Abrir en pestaña nueva</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'list' 'puestos_oficina' %}">Ver tabla</a>
+  </div>
+</div>
+<iframe src="{% url 'plano_puestos_app' %}" title="Plano de puestos"
+        style="width: 100%; height: calc(100vh - 110px); border: 1px solid var(--border, #d1d5db); border-radius: 8px; background: #fff;"></iframe>
+{% endblock %}

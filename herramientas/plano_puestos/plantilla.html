@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plano de Puestos</title>
+<style>
+:root{
+  --bg:#f3f4f6;--panel:#ffffff;--ink:#1f2937;--muted:#6b7280;--line:#e5e7eb;--hover:#f3f4f6;
+  --accent:#1d4ed8;--accent-soft:#e0e7ff;
+  --free:#ecfdf3;--free-s:#16a34a;--occ:#dbeafe;--occ-s:#1d4ed8;--part:#fef3c7;--part-s:#b45309;
+  --sel:#ea580c;--paper:#ffffff;--danger:#b91c1c;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111418;--panel:#1a1e24;--ink:#e5e7eb;--muted:#9ca3af;--line:#2b313a;--hover:#232830;
+  --accent:#7aa2ff;--accent-soft:#25304a;--danger:#f87171;
+}}
+:root[data-theme="dark"]{--bg:#111418;--panel:#1a1e24;--ink:#e5e7eb;--muted:#9ca3af;--line:#2b313a;--hover:#232830;--accent:#7aa2ff;--accent-soft:#25304a;--danger:#f87171}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.4 "Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column}
+button,input,select{font:inherit;color:inherit}
+button{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{background:var(--hover)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.danger{color:var(--danger)}
+input,select{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:5px 8px;min-width:0}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:16px;margin:0 8px 0 0;font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:5px 12px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--accent);color:#fff}
+.grow{flex:1}
+main{flex:1;display:flex;min-height:0}
+#stage{flex:1;position:relative;min-width:0;display:flex;flex-direction:column}
+#bar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--panel);font-size:13px}
+.lg{display:inline-flex;align-items:center;gap:5px;color:var(--muted)}
+.sw{width:14px;height:10px;border-radius:2px;border:1.5px solid}
+#cvwrap{flex:1;position:relative;min-height:0}
+svg#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;user-select:none;cursor:grab;background:var(--bg)}
+svg#cv.panning{cursor:grabbing}
+#zoom{position:absolute;right:12px;bottom:12px;display:flex;gap:4px}
+#zoom button{width:34px;padding:5px 0}
+aside{width:330px;flex:none;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+aside section{padding:12px 14px;border-bottom:1px solid var(--line)}
+aside h3{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 8px;font-weight:600}
+.row{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.row label{min-width:62px;color:var(--muted);font-size:13px}
+.row input[type=number]{width:70px}
+#plist{flex:1;overflow:auto;padding:6px 8px}
+.person{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:grab;touch-action:none}
+.person:hover{background:var(--hover)}
+.person .nm{flex:1;min-width:0}
+.person .nm b{font-weight:500;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.person .nm small{color:var(--muted);font-size:12px}
+.person .x{border:0;background:none;color:var(--muted);padding:0 4px;visibility:hidden}
+.person:hover .x{visibility:visible}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chips button{padding:3px 9px;font-size:12px;border-radius:12px}
+.chips button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.dayrow{display:grid;grid-template-columns:34px 1fr 26px;gap:6px;align-items:center;margin-bottom:5px}
+.dayrow span{color:var(--muted);font-size:13px}
+.dayrow button{padding:3px 0}
+.hint{color:var(--muted);font-size:12px;margin:6px 0 0}
+#ghost{position:fixed;pointer-events:none;z-index:50;background:var(--accent);color:#fff;padding:4px 10px;border-radius:14px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.25);display:none;white-space:nowrap}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111827;color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60}
+.hide{display:none!important}
+#seatbox{background:var(--accent-soft)}
+dialog#pdlg{border:1px solid var(--line);border-radius:10px;padding:0;background:var(--panel);color:var(--ink);width:min(760px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+dialog#pdlg::backdrop{background:rgba(0,0,0,.35)}
+#pdlg .dh{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+#pdlg .dh h2{font-size:16px;margin:0;flex:1}
+#pdlg .db{padding:12px 16px;overflow:auto;max-height:calc(100vh - 170px)}
+#pdlg .add{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;margin-bottom:6px}
+#pdlg textarea{font:inherit;color:inherit;width:100%;min-height:70px;border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:6px 8px;resize:vertical}
+#pdlg details{margin:4px 0 12px}
+#pdlg summary{cursor:pointer;color:var(--accent);font-size:13px}
+#ptab{width:100%;border-collapse:collapse;font-size:13px}
+#ptab th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;padding:6px 4px;border-bottom:1px solid var(--line);position:sticky;top:-12px;background:var(--panel)}
+#ptab td{padding:3px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+#ptab td input[type=text]{width:100%}
+#ptab td.c{text-align:center}
+#ptab td.pu{color:var(--muted);font-size:12px;max-width:170px}
+#ptab button{border:0;background:none;color:var(--muted);padding:2px 6px}
+#ptab button:hover{color:var(--danger)}
+@media (max-width:760px){main{flex-direction:column}aside{width:auto;height:45vh;border-left:0;border-top:1px solid var(--line)}}
+@media print{header,aside,#bar,#zoom{display:none!important}svg#cv{background:#fff}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Plano de Puestos</h1>
+  <select id="floorSel" title="Piso / oficina"></select>
+  <button id="addFloor" title="Agregar piso u oficina">+ Piso</button>
+  <div class="seg" id="modeSeg">
+    <button data-m="asignar" class="on">Asignar personas</button>
+    <button data-m="editar">Editar plano</button>
+  </div>
+  <div class="seg" id="daySeg"></div>
+  <span class="grow"></span>
+  <button id="undoB" title="Deshacer (Ctrl+Z)">↶</button>
+  <button id="redoB" title="Rehacer (Ctrl+Y)">↷</button>
+  <button id="csvB" title="Descargar la tabla del piso para Excel">Exportar a Excel</button>
+  <button id="saveB" title="Guardar un respaldo completo">Guardar respaldo</button>
+  <button id="openB" title="Abrir un respaldo">Abrir respaldo</button>
+  <button id="printB">Imprimir</button>
+  <input type="file" id="openF" accept=".json" class="hide">
+</header>
+<main>
+  <div id="stage">
+    <div id="bar">
+      <span id="stats"></span>
+      <span class="grow"></span>
+      <span class="lg"><i class="sw" style="background:var(--free);border-color:var(--free-s)"></i>Libre</span>
+      <span class="lg"><i class="sw" style="background:var(--occ);border-color:var(--occ-s)"></i>Ocupado</span>
+      <span class="lg" id="lgPart"><i class="sw" style="background:var(--part);border-color:var(--part-s)"></i>Parcial / compartido</span>
+    </div>
+    <div id="cvwrap">
+      <svg id="cv"><g id="world"></g></svg>
+      <div id="zoom"><button id="zIn">+</button><button id="zOut">−</button><button id="zFit" title="Ajustar a pantalla">⤢</button></div>
+    </div>
+  </div>
+  <aside>
+    <!-- ASIGNAR -->
+    <div id="asgPane" style="display:flex;flex-direction:column;min-height:0;flex:1">
+      <section id="seatbox" class="hide"></section>
+      <section>
+        <h3>Personas</h3>
+        <div class="row"><input id="q" placeholder="Buscar…" style="flex:1"></div>
+        <div class="chips" id="pfilter">
+          <button data-f="todos" class="on">Todos</button>
+          <button data-f="sin">Sin puesto</button>
+          <button data-f="con">Con puesto</button>
+          <button data-f="nec">Necesitan y no tienen</button>
+        </div>
+        <p class="hint">Arrastra un nombre a un puesto. Para cambiar a alguien de puesto, arrastra el puesto a otro (si está ocupado, se intercambian). Para liberarlo, suéltalo en esta lista. Clic en un nombre para editarlo.</p>
+      </section>
+      <div id="plist"></div>
+      <section style="border-top:1px solid var(--line);border-bottom:0">
+        <div class="row"><input id="newP" placeholder="Nombre de persona nueva" style="flex:1"><button id="addP">Agregar</button></div>
+        <div class="row" style="margin:0"><button id="managePB" style="flex:1">Administrar personas…</button></div>
+      </section>
+    </div>
+    <!-- EDITAR -->
+    <div id="edPane" class="hide" style="overflow:auto;flex:1">
+      <section id="selbox" class="hide"></section>
+      <section>
+        <h3>Agregar puestos</h3>
+        <div class="row"><label>Columnas</label><input type="number" id="gCols" value="2" min="1"><label style="min-width:auto">Filas</label><input type="number" id="gRows" value="2" min="1"></div>
+        <div class="row"><button class="primary" id="addGrid" style="flex:1">+ Bloque de puestos</button><button id="addSeat">+ 1 puesto</button></div>
+        <p class="hint">Aparecen al centro de la vista. Arrástralos a su lugar. Shift+clic selecciona varios; las flechas los mueven y Supr los borra.</p>
+      </section>
+      <section>
+        <h3>Zonas</h3>
+        <div class="row"><button id="addZone" style="flex:1">+ Zona (sala, oficina, pasillo…)</button></div>
+      </section>
+      <section>
+        <h3>Plano</h3>
+        <div class="row"><label>Nombre</label><input id="fName" style="flex:1"></div>
+        <div class="row"><label>Ancho</label><input type="number" id="fW"><label style="min-width:auto">Alto</label><input type="number" id="fH"></div>
+        <div class="row"><label>Puesto</label><input type="number" id="sW" title="ancho"><span>×</span><input type="number" id="sH" title="alto"></div>
+        <div class="row"><label>Fondo</label><button id="bgB" style="flex:1">Cargar imagen del plano…</button><button id="bgX" title="Quitar fondo">✕</button></div>
+        <input type="file" id="bgF" accept="image/*" class="hide">
+        <div class="row"><label>Opacidad</label><input type="range" id="bgO" min="0" max="1" step="0.05" style="flex:1"></div>
+        <div class="row"><label>Imán</label><label style="min-width:auto;color:var(--ink)"><input type="checkbox" id="snap" checked> Alinear a grilla</label></div>
+        <div class="row"><button id="renum" style="flex:1">Renumerar (arriba→abajo, izq→der)</button></div>
+        <div class="row"><button class="danger" id="delFloor" style="flex:1">Eliminar este piso</button></div>
+      </section>
+      <section>
+        <h3>Datos</h3>
+        <div class="row"><button class="danger" id="resetB" style="flex:1">Volver a los datos originales</button></div>
+        <p class="hint">Los cambios se guardan solos en este navegador. Para compartirlos o no perderlos, usa “Guardar respaldo”.</p>
+      </section>
+    </div>
+  </aside>
+</main>
+<dialog id="pdlg">
+  <div class="dh"><h2>Personas</h2><span id="pcount" class="hint" style="margin:0"></span><button id="pdClose">Cerrar</button></div>
+  <div class="db">
+    <div class="add">
+      <input id="pdName" placeholder="Nombre y apellidos">
+      <label style="font-size:13px;white-space:nowrap"><input type="checkbox" id="pdNeeds" checked> Necesita puesto</label>
+      <button class="primary" id="pdAdd">Agregar</button>
+    </div>
+    <details>
+      <summary>Agregar varias de una vez</summary>
+      <textarea id="pdBulk" placeholder="Pega una persona por línea (por ejemplo, copiadas desde Excel)"></textarea>
+      <div class="row" style="margin-top:6px"><button id="pdBulkB">Agregar todas</button></div>
+    </details>
+    <div class="row"><input id="pdQ" placeholder="Buscar en la lista…" style="flex:1"></div>
+    <table id="ptab"><thead><tr><th>Nombre</th><th class="c">Necesita puesto</th><th>Nota</th><th>Puestos</th><th></th></tr></thead><tbody></tbody></table>
+  </div>
+</dialog>
+<datalist id="dlPeople"></datalist>
+<div id="ghost"></div>
+<div id="toast"></div>
+<script>
+const SEED = /*__SEED__*/null;
+const KEY = 'plano_puestos_gtec_v1';
+const DAYS = ['Lu','Ma','Mi','Ju','Vi'], DAYN = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+const $ = s => document.querySelector(s);
+const svg = $('#cv'), world = $('#world');
+const clone = o => JSON.parse(JSON.stringify(o));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+function load(){ try{ const t = localStorage.getItem(KEY); return t ? JSON.parse(t) : null; }catch(e){ return null; } }
+const EMPTY = {floors:[{id:'f1', name:'Piso 1', w:1000, h:700, seatW:50, seatH:34, bgOpacity:0.5, seats:[], zones:[]}], people:[], bgs:{}, cur:'f1'};
+const BASE = SEED || EMPTY;
+let S = load() || clone(BASE);
+let saveWarned = false;
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ if(!saveWarned){ toast('No se pudo guardar en el navegador. Usa "Guardar respaldo".'); saveWarned = true; } } }
+
+const ui = { mode:'asignar', day:0, sel:new Set(), zone:null, detail:null, filter:'todos', q:'', vb:{}, snap:true };
+{ const d = new Date().getDay(); ui.day = (d>=1 && d<=5) ? d-1 : 5; }
+
+// ---------- deshacer ----------
+let undoS = [], redoS = [];
+const snapData = () => JSON.stringify({floors:S.floors, people:S.people, cur:S.cur});
+function snapshot(){ undoS.push(snapData()); if(undoS.length>80) undoS.shift(); redoS = []; }
+function restore(t){ Object.assign(S, JSON.parse(t)); if(!S.floors.find(f=>f.id===S.cur)) S.cur = S.floors[0].id; ui.sel.clear(); ui.zone=null; render(); save(); }
+function undo(){ if(!undoS.length) return; redoS.push(snapData()); restore(undoS.pop()); }
+function redo(){ if(!redoS.length) return; undoS.push(snapData()); restore(redoS.pop()); }
+
+// ---------- utilidades de datos ----------
+const floor = () => S.floors.find(f => f.id === S.cur);
+const scopeDays = () => ui.day < 5 ? [ui.day] : [0,1,2,3,4];
+const seatById = id => floor().seats.find(s => s.id === id);
+function shortName(n){
+  const t = String(n).trim().split(/\s+/);
+  if(t.length >= 4) return t[0]+' '+t[2];
+  if(t.length >= 2) return t[0]+' '+t[1];
+  return t[0] || '';
+}
+function ensurePerson(name){
+  name = name.replace(/\s+/g,' ').trim();
+  if(!name) return '';
+  const hit = S.people.find(p => norm(p.name) === norm(name));
+  if(hit) return hit.name;
+  S.people.push({name, needs:true, note:''});
+  S.people.sort((a,b)=>norm(a.name).localeCompare(norm(b.name)));
+  return name;
+}
+function renamePerson(oldN, newN){
+  newN = newN.replace(/\s+/g,' ').trim();
+  if(!newN || newN === oldN) return false;
+  if(S.people.some(p => p.name !== oldN && norm(p.name) === norm(newN))){ toast(`Ya existe ${newN} en la lista`); return false; }
+  snapshot();
+  S.people.find(p => p.name === oldN).name = newN;
+  for(const f of S.floors) for(const s of f.seats) s.days = s.days.map(x => x === oldN ? newN : x);
+  S.people.sort((a,b)=>norm(a.name).localeCompare(norm(b.name)));
+  return true;
+}
+function removePerson(n){
+  if(!confirm(`¿Quitar a ${n} de la lista? También se libera de sus puestos.`)) return false;
+  snapshot(); S.people = S.people.filter(p => p.name !== n);
+  for(const f of S.floors) for(const s of f.seats) s.days = s.days.map(x => x === n ? '' : x);
+  return true;
+}
+function clearPersonDay(name, d){ for(const f of S.floors) for(const s of f.seats) if(s.days[d] === name) s.days[d] = ''; }
+function assign(name, seat, days){
+  snapshot();
+  name = ensurePerson(name);
+  for(const d of days){ clearPersonDay(name, d); seat.days[d] = name; }
+  commit();
+}
+function moveSeat(src, dst, days){
+  if(src === dst) return;
+  const ds = days.filter(d => src.days[d]);
+  if(!ds.length) return;
+  snapshot();
+  for(const d of ds){ const a = src.days[d]; src.days[d] = dst.days[d] || ''; dst.days[d] = a; }
+  commit();
+  toast(`Movido de puesto ${src.num} a ${dst.num}`);
+}
+function unassignSeat(seat, days){ snapshot(); for(const d of days) seat.days[d]=''; commit(); }
+function commit(){ save(); render(); }
+
+// índice persona -> asignaciones
+function personIndex(){
+  const m = new Map();
+  for(const f of S.floors) for(const s of f.seats) s.days.forEach((n,d) => { if(!n) return; if(!m.has(n)) m.set(n, []); m.get(n).push({f, s, d}); });
+  return m;
+}
+function daySummary(ds){
+  ds = [...new Set(ds)].sort();
+  if(ds.length === 5) return 'Lu–Vi';
+  return ds.map(d => DAYS[d]).join(' ');
+}
+
+// ---------- vista / zoom ----------
+function bounds(f){
+  let x0=0, y0=0, x1=f.w, y1=f.h;
+  for(const s of f.seats){ const [w,h] = dims(f,s); x0=Math.min(x0,s.x); y0=Math.min(y0,s.y); x1=Math.max(x1,s.x+w); y1=Math.max(y1,s.y+h); }
+  const p = Math.max(x1-x0, y1-y0) * 0.04;
+  return {x:x0-p, y:y0-p, w:x1-x0+2*p, h:y1-y0+2*p};
+}
+function fit(){ ui.vb[S.cur] = bounds(floor()); setVB(); }
+function vb(){ if(!ui.vb[S.cur]) ui.vb[S.cur] = bounds(floor()); return ui.vb[S.cur]; }
+function setVB(){ const v = vb(); svg.setAttribute('viewBox', `${v.x} ${v.y} ${v.w} ${v.h}`); }
+function toWorld(cx, cy){ const p = svg.createSVGPoint(); p.x=cx; p.y=cy; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+function zoomAt(k, cx, cy){
+  const v = vb(), p = toWorld(cx, cy);
+  v.x = p.x - (p.x - v.x) * k; v.y = p.y - (p.y - v.y) * k; v.w *= k; v.h *= k; setVB();
+}
+function zoomCenter(k){ const r = svg.getBoundingClientRect(); zoomAt(k, r.left + r.width/2, r.top + r.height/2); }
+function viewCenter(){ const r = svg.getBoundingClientRect(); return toWorld(r.left + r.width/2, r.top + r.height/2); }
+svg.addEventListener('wheel', e => { e.preventDefault(); zoomAt(e.deltaY > 0 ? 1.12 : 1/1.12, e.clientX, e.clientY); }, {passive:false});
+
+// ---------- dibujo ----------
+const dims = (f, s) => s.rot ? [f.seatH, f.seatW] : [f.seatW, f.seatH];
+function seatState(s){
+  const ds = scopeDays(), names = ds.map(d => s.days[d]).filter(Boolean);
+  if(!names.length) return {cls:'free', names:[]};
+  const uniq = [...new Set(names)];
+  if(ui.day < 5) return {cls:'occ', names:uniq};
+  return {cls: (names.length === 5 && uniq.length === 1) ? 'occ' : 'part', names:uniq};
+}
+const COL = {free:['--free','--free-s'], occ:['--occ','--occ-s'], part:['--part','--part-s']};
+function renderWorld(){
+  const f = floor(), bg = S.bgs && S.bgs[f.id];
+  let h = `<rect x="0" y="0" width="${f.w}" height="${f.h}" fill="var(--paper)" stroke="#9ca3af" stroke-width="${Math.max(f.w,f.h)/400}" data-bg="1"/>`;
+  if(bg) h += `<image href="${bg}" x="0" y="0" width="${f.w}" height="${f.h}" opacity="${f.bgOpacity}" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>`;
+  const fs0 = Math.min(f.seatW, f.seatH);
+  for(const z of f.zones){
+    const on = ui.zone === z.id && ui.mode === 'editar';
+    h += `<g data-zone="${z.id}"><rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="4" fill="rgba(100,116,139,.10)" stroke="${on?'var(--sel)':'#94a3b8'}" stroke-width="${on?2:1}" stroke-dasharray="${on?'':'6 4'}" vector-effect="non-scaling-stroke"/>
+      <text x="${z.x+8}" y="${z.y+fs0*0.45+6}" font-size="${fs0*0.45}" fill="#475569" font-weight="600" pointer-events="none">${esc(z.label)}</text>`;
+    if(on) h += `<rect data-handle="${z.id}" x="${z.x+z.w-fs0*0.3}" y="${z.y+z.h-fs0*0.3}" width="${fs0*0.6}" height="${fs0*0.6}" fill="var(--sel)" style="cursor:nwse-resize"/>`;
+    h += `</g>`;
+  }
+  for(const s of f.seats){
+    const [w, hh] = dims(f, s), st = seatState(s), [c1, c2] = COL[st.cls];
+    const sel = ui.mode === 'editar' ? ui.sel.has(s.id) : ui.detail === s.id;
+    const m = Math.min(w, hh), fs = m * 0.26;
+    h += `<g data-seat="${s.id}" transform="translate(${s.x},${s.y})" style="cursor:${ui.mode==='editar'?'move':'pointer'}">`;
+    h += `<rect width="${w}" height="${hh}" rx="${m*0.12}" fill="var(${c1})" stroke="${sel?'var(--sel)':`var(${c2})`}" stroke-width="${sel?2.5:1.2}" vector-effect="non-scaling-stroke"/>`;
+    h += `<text x="${m*0.1}" y="${fs*1.0}" font-size="${fs*0.9}" font-weight="700" fill="var(${c2})">${esc(s.num)}</text>`;
+    if(s.note) h += `<circle cx="${w-m*0.12}" cy="${m*0.12}" r="${m*0.06}" fill="var(--part-s)"><title>${esc(s.note)}</title></circle>`;
+    let lines = [];
+    if(st.names.length === 1){ const t = shortName(st.names[0]).split(' '); lines = t.length > 1 ? [t[0], t.slice(1).join(' ')] : t; }
+    else if(st.names.length === 2) lines = st.names.map(n => shortName(n).split(' ')[0]);
+    else if(st.names.length > 2) lines = [st.names.length + ' pers.'];
+    const lf = fs * 0.95, maxc = Math.max(4, Math.floor(w / (lf * 0.55)));
+    lines.forEach((l, i) => {
+      if(l.length > maxc) l = l.slice(0, maxc - 1) + '…';
+      const y = hh/2 + lf*0.35 + (i - (lines.length-1)/2) * lf * 1.1 + fs*0.25;
+      h += `<text x="${w/2}" y="${y}" font-size="${lf}" text-anchor="middle" fill="#1f2937">${esc(l)}</text>`;
+    });
+    if(ui.day === 5){
+      const bw = (w - m*0.2) / 5;
+      for(let d=0; d<5; d++) h += `<rect x="${m*0.1 + d*bw + 0.5}" y="${hh - m*0.14}" width="${bw-1}" height="${m*0.07}" fill="${s.days[d]?`var(--occ-s)`:'#d1d5db'}"/>`;
+    }
+    const tip = s.days.map((n,d) => `${DAYN[d]}: ${n || '—'}`).join('\n') + (s.note ? '\n' + s.note : '');
+    h += `<title>Puesto ${esc(s.num)}\n${esc(tip)}</title></g>`;
+  }
+  world.innerHTML = h;
+  setVB();
+}
+
+function renderHeader(){
+  $('#floorSel').innerHTML = S.floors.map(f => `<option value="${f.id}" ${f.id===S.cur?'selected':''}>${esc(f.name)}</option>`).join('');
+  $('#daySeg').innerHTML = DAYS.map((d,i) => `<button data-d="${i}" class="${ui.day===i?'on':''}">${d}</button>`).join('') + `<button data-d="5" class="${ui.day===5?'on':''}">Semana</button>`;
+  document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.m === ui.mode));
+  $('#asgPane').classList.toggle('hide', ui.mode !== 'asignar');
+  $('#edPane').classList.toggle('hide', ui.mode !== 'editar');
+  $('#lgPart').classList.toggle('hide', ui.day !== 5);
+  $('#undoB').disabled = !undoS.length; $('#redoB').disabled = !redoS.length;
+  const f = floor();
+  let occ = 0; for(const s of f.seats){ if(seatState(s).cls !== 'free') occ++; }
+  const lbl = ui.day < 5 ? DAYN[ui.day] : 'En la semana';
+  $('#stats').innerHTML = `<b>${f.seats.length}</b> puestos · ${lbl}: <b>${occ}</b> ocupados · <b>${f.seats.length-occ}</b> libres`;
+}
+
+function renderPeople(){
+  const idx = personIndex(), ds = scopeDays(), q = norm(ui.q);
+  $('#dlPeople').innerHTML = S.people.map(p => `<option value="${esc(p.name)}">`).join('');
+  const rows = S.people.filter(p => {
+    if(q && !norm(p.name).includes(q)) return false;
+    const a = (idx.get(p.name) || []).filter(x => ds.includes(x.d));
+    if(ui.filter === 'sin') return !a.length;
+    if(ui.filter === 'con') return a.length;
+    if(ui.filter === 'nec') return p.needs && !a.length;
+    return true;
+  });
+  $('#plist').innerHTML = rows.map(p => {
+    const all = idx.get(p.name) || [], a = all.filter(x => ds.includes(x.d));
+    const g = {};
+    for(const x of all){ const k = (S.floors.length>1 ? x.f.name + ' · ' : '') + 'P' + x.s.num; (g[k] ||= []).push(x.d); }
+    const sub = Object.entries(g).map(([k,v]) => `${k} (${daySummary(v)})`).join(', ');
+    const color = a.length ? 'var(--occ-s)' : (p.needs ? 'var(--part-s)' : '#9ca3af');
+    return `<div class="person" data-p="${esc(p.name)}"><span class="dot" style="background:${color}"></span>
+      <span class="nm"><b>${esc(p.name)}</b><small>${sub ? esc(sub) : (p.needs ? 'Sin puesto' : 'Sin puesto · no requiere')}${p.note ? ' · ' + esc(p.note) : ''}</small></span>
+      <button class="x" data-del="${esc(p.name)}" title="Quitar de la lista">✕</button></div>`;
+  }).join('') || `<p class="hint" style="padding:8px">Nadie en este filtro.</p>`;
+}
+
+function renderSeatBox(){
+  const box = $('#seatbox'), s = ui.detail && seatById(ui.detail);
+  if(!s){ box.classList.add('hide'); return; }
+  box.classList.remove('hide');
+  box.innerHTML = `<div class="row" style="justify-content:space-between"><h3 style="margin:0">Puesto ${esc(s.num)} · ${esc(floor().name)}</h3><button id="sbClose" style="border:0;background:none">✕</button></div>
+    ${s.days.map((n,d) => `<div class="dayrow"><span>${DAYS[d]}</span><input list="dlPeople" data-day="${d}" value="${esc(n)}" placeholder="Libre"><button data-clr="${d}" title="Liberar">✕</button></div>`).join('')}
+    <div class="row"><input id="sbNote" placeholder="Nota (ej. intercalado, falta monitor)" value="${esc(s.note)}" style="flex:1"></div>
+    <div class="row"><button id="sbWeek" style="flex:1" title="Deja a la persona del lunes toda la semana">Lunes → toda la semana</button><button id="sbFree" class="danger">Liberar todo</button></div>`;
+}
+
+function renderSelBox(){
+  const box = $('#selbox'), f = floor();
+  const z = ui.zone && f.zones.find(z => z.id === ui.zone);
+  if(z){
+    box.classList.remove('hide');
+    box.innerHTML = `<h3>Zona seleccionada</h3><div class="row"><label>Nombre</label><input id="zLabel" value="${esc(z.label)}" style="flex:1"></div>
+      <div class="row"><button class="danger" id="zDel" style="flex:1">Borrar zona</button></div><p class="hint">Arrastra el cuadrito naranjo para cambiar su tamaño.</p>`;
+    return;
+  }
+  if(!ui.sel.size){ box.classList.add('hide'); return; }
+  box.classList.remove('hide');
+  const one = ui.sel.size === 1 ? seatById([...ui.sel][0]) : null;
+  box.innerHTML = `<h3>${one ? 'Puesto seleccionado' : ui.sel.size + ' puestos seleccionados'}</h3>
+    ${one ? `<div class="row"><label>N°</label><input id="eNum" value="${esc(one.num)}" style="width:80px"></div>
+             <div class="row"><label>Nota</label><input id="eNote" value="${esc(one.note)}" style="flex:1"></div>` : ''}
+    <div class="row"><button id="eRot" style="flex:1">Girar</button><button id="eDup" style="flex:1">Duplicar</button><button class="danger" id="eDel" style="flex:1">Borrar</button></div>`;
+}
+
+function renderEditFields(){
+  const f = floor();
+  $('#fName').value = f.name; $('#fW').value = f.w; $('#fH').value = f.h;
+  $('#sW').value = f.seatW; $('#sH').value = f.seatH; $('#bgO').value = f.bgOpacity;
+  $('#snap').checked = ui.snap;
+}
+function render(){ renderHeader(); renderWorld(); if(ui.mode === 'asignar'){ renderPeople(); renderSeatBox(); } else { renderSelBox(); renderEditFields(); } }
+
+// ---------- arrastre ----------
+const ghost = $('#ghost');
+let drag = null;
+const grid = () => Math.max(2, Math.round(Math.min(floor().seatW, floor().seatH) / 6));
+const snapv = v => ui.snap ? Math.round(v / grid()) * grid() : v;
+function showGhost(t, e){ ghost.textContent = t; ghost.style.display = 'block'; moveGhost(e); }
+function moveGhost(e){ ghost.style.left = (e.clientX + 12) + 'px'; ghost.style.top = (e.clientY + 8) + 'px'; }
+function seatAt(e){ const el = document.elementFromPoint(e.clientX, e.clientY); const g = el && el.closest('[data-seat]'); return g ? seatById(g.dataset.seat) : null; }
+
+svg.addEventListener('pointerdown', e => {
+  if(e.button !== 0) return;
+  const f = floor(), p = toWorld(e.clientX, e.clientY);
+  const hEl = e.target.closest('[data-handle]'), sEl = e.target.closest('[data-seat]'), zEl = e.target.closest('[data-zone]');
+  const base = {sx:e.clientX, sy:e.clientY, p0:p, moved:false};
+  if(ui.mode === 'editar' && hEl){
+    const z = f.zones.find(z => z.id === hEl.dataset.handle);
+    drag = {...base, type:'resize', z, w0:z.w, h0:z.h};
+  } else if(sEl){
+    const s = seatById(sEl.dataset.seat);
+    if(ui.mode === 'editar'){
+      ui.zone = null;
+      if(e.shiftKey){ ui.sel.has(s.id) ? ui.sel.delete(s.id) : ui.sel.add(s.id); render(); return; }
+      if(!ui.sel.has(s.id)){ ui.sel = new Set([s.id]); }
+      drag = {...base, type:'move', orig:[...ui.sel].map(id => { const q = seatById(id); return [q, q.x, q.y]; })};
+      render();
+    } else {
+      drag = {...base, type:'seat', s};
+    }
+  } else if(ui.mode === 'editar' && zEl){
+    const z = f.zones.find(z => z.id === zEl.dataset.zone);
+    ui.zone = z.id; ui.sel.clear();
+    drag = {...base, type:'zone', z, x0:z.x, y0:z.y};
+    render();
+  } else {
+    drag = {...base, type:'pan', v0:{...vb()}};
+    svg.classList.add('panning');
+  }
+  svg.setPointerCapture(e.pointerId);
+});
+
+document.getElementById('plist').addEventListener('pointerdown', e => {
+  if(e.button !== 0 || e.target.closest('[data-del]')) return;
+  const el = e.target.closest('[data-p]'); if(!el) return;
+  e.preventDefault();
+  drag = {type:'person', name:el.dataset.p, sx:e.clientX, sy:e.clientY, moved:false};
+});
+
+window.addEventListener('pointermove', e => {
+  if(!drag) return;
+  const dxc = e.clientX - drag.sx, dyc = e.clientY - drag.sy;
+  if(!drag.moved && Math.hypot(dxc, dyc) < 4) return;
+  const first = !drag.moved; drag.moved = true;
+  if(drag.type === 'pan'){
+    const r = svg.getBoundingClientRect(), v = vb(), k = Math.max(drag.v0.w / r.width, drag.v0.h / r.height);
+    v.x = drag.v0.x - dxc * k; v.y = drag.v0.y - dyc * k; setVB(); return;
+  }
+  if(drag.type === 'person' || drag.type === 'seat'){
+    if(first){
+      if(drag.type === 'seat'){
+        const names = [...new Set(scopeDays().map(d => drag.s.days[d]).filter(Boolean))];
+        if(!names.length){ drag = null; return; }
+        showGhost(`Puesto ${drag.s.num}: ${names.map(shortName).join(', ')}`, e);
+      } else showGhost(drag.name, e);
+    }
+    moveGhost(e);
+    document.querySelectorAll('[data-seat] > rect:first-child').forEach(r => r.style.filter = '');
+    const t = seatAt(e); if(t) svg.querySelector(`[data-seat="${t.id}"] > rect`).style.filter = 'drop-shadow(0 0 3px var(--sel))';
+    return;
+  }
+  const p = toWorld(e.clientX, e.clientY), dx = p.x - drag.p0.x, dy = p.y - drag.p0.y;
+  if(first) snapshot();
+  if(drag.type === 'move') for(const [s, x, y] of drag.orig){ s.x = snapv(x + dx); s.y = snapv(y + dy); }
+  if(drag.type === 'zone'){ drag.z.x = snapv(drag.x0 + dx); drag.z.y = snapv(drag.y0 + dy); }
+  if(drag.type === 'resize'){ drag.z.w = Math.max(20, snapv(drag.w0 + dx)); drag.z.h = Math.max(20, snapv(drag.h0 + dy)); }
+  renderWorld();
+});
+
+window.addEventListener('pointerup', e => {
+  if(!drag) return;
+  const d = drag; drag = null;
+  svg.classList.remove('panning'); ghost.style.display = 'none';
+  if(d.type === 'pan' && !d.moved){
+    if(ui.mode === 'editar'){ ui.sel.clear(); ui.zone = null; } else ui.detail = null;
+    render(); return;
+  }
+  if(d.type === 'seat' && !d.moved){ ui.detail = d.s.id; render(); return; }
+  if(d.type === 'person' && !d.moved){ openPeople(d.name); return; }
+  if(d.type === 'person' || d.type === 'seat'){
+    if(!d.moved) return;
+    const t = seatAt(e), overList = document.elementFromPoint(e.clientX, e.clientY)?.closest('#plist');
+    if(d.type === 'person' && t){ assign(d.name, t, scopeDays()); toast(`${shortName(d.name)} → puesto ${t.num} (${ui.day<5?DAYN[ui.day]:'toda la semana'})`); }
+    else if(d.type === 'seat' && t) moveSeat(d.s, t, scopeDays());
+    else if(d.type === 'seat' && overList){ unassignSeat(d.s, scopeDays()); toast(`Puesto ${d.s.num} liberado`); }
+    else render();
+    return;
+  }
+  if(d.moved){ save(); render(); }
+});
+
+// ---------- eventos de la interfaz ----------
+$('#modeSeg').onclick = e => { const b = e.target.closest('button'); if(!b) return; ui.mode = b.dataset.m; ui.sel.clear(); ui.zone = null; ui.detail = null; render(); };
+$('#daySeg').onclick = e => { const b = e.target.closest('button'); if(!b) return; ui.day = +b.dataset.d; render(); };
+$('#floorSel').onchange = e => { S.cur = e.target.value; ui.sel.clear(); ui.zone = null; ui.detail = null; save(); render(); };
+$('#addFloor').onclick = () => {
+  const n = prompt('Nombre del piso u oficina:', 'Piso ' + (S.floors.length + 1)); if(!n) return;
+  snapshot(); const id = 'f' + uid();
+  S.floors.push({id, name:n, w:1000, h:700, seatW:50, seatH:34, bgOpacity:0.5, seats:[], zones:[]});
+  S.cur = id; ui.mode = 'editar'; commit(); fit();
+  toast('Piso creado. Agrega puestos y, si tienes el plano, cárgalo de fondo.');
+};
+$('#pfilter').onclick = e => { const b = e.target.closest('button'); if(!b) return; ui.filter = b.dataset.f; document.querySelectorAll('#pfilter button').forEach(x => x.classList.toggle('on', x === b)); renderPeople(); };
+$('#q').oninput = e => { ui.q = e.target.value; renderPeople(); };
+$('#plist').onclick = e => {
+  const b = e.target.closest('[data-del]'); if(!b) return;
+  if(removePerson(b.dataset.del)) commit();
+};
+const addPerson = () => { const n = $('#newP').value.trim(); if(!n) return; snapshot(); ensurePerson(n); $('#newP').value = ''; commit(); toast('Agregado. Ahora arrástralo a un puesto.'); };
+$('#addP').onclick = addPerson; $('#newP').onkeydown = e => { if(e.key === 'Enter') addPerson(); };
+
+$('#seatbox').addEventListener('change', e => {
+  const s = seatById(ui.detail); if(!s) return;
+  if(e.target.dataset.day !== undefined){
+    const d = +e.target.dataset.day, v = e.target.value.trim();
+    if(v) assign(v, s, [d]); else unassignSeat(s, [d]);
+  } else if(e.target.id === 'sbNote'){ snapshot(); s.note = e.target.value.trim(); commit(); }
+});
+$('#seatbox').addEventListener('click', e => {
+  const s = seatById(ui.detail); if(!s) return;
+  if(e.target.id === 'sbClose'){ ui.detail = null; render(); }
+  else if(e.target.dataset.clr !== undefined) unassignSeat(s, [+e.target.dataset.clr]);
+  else if(e.target.id === 'sbFree') unassignSeat(s, [0,1,2,3,4]);
+  else if(e.target.id === 'sbWeek'){ if(!s.days[0]) return toast('El lunes está libre.'); assign(s.days[0], s, [0,1,2,3,4]); }
+});
+
+// administrar personas
+const pdlg = $('#pdlg');
+function renderPeopleTable(){
+  const idx = personIndex(), q = norm($('#pdQ').value);
+  $('#pcount').textContent = `${S.people.length} en la lista`;
+  const rows = S.people.filter(p => !q || norm(p.name).includes(q));
+  pdlg.querySelector('tbody').innerHTML = rows.map(p => {
+    const g = {};
+    for(const x of idx.get(p.name) || []){ const k = (S.floors.length>1 ? x.f.name + ' · ' : '') + 'P' + x.s.num; (g[k] ||= []).push(x.d); }
+    const sub = Object.entries(g).map(([k,v]) => `${k} (${daySummary(v)})`).join(', ');
+    return `<tr data-p="${esc(p.name)}">
+      <td><input type="text" data-f="name" value="${esc(p.name)}"></td>
+      <td class="c"><input type="checkbox" data-f="needs" ${p.needs?'checked':''}></td>
+      <td><input type="text" data-f="note" value="${esc(p.note)}" placeholder="—"></td>
+      <td class="pu">${sub ? esc(sub) : '—'}</td>
+      <td><button data-f="del" title="Quitar de la lista">✕</button></td></tr>`;
+  }).join('') || `<tr><td colspan="5" class="hint">Nadie con ese nombre.</td></tr>`;
+}
+function openPeople(focusName){
+  $('#pdQ').value = focusName || '';
+  renderPeopleTable();
+  if(!pdlg.open) pdlg.showModal();
+  if(focusName){ const i = pdlg.querySelector('tbody input[data-f="name"]'); if(i){ i.focus(); i.select(); } }
+  else $('#pdName').focus();
+}
+function addFromDialog(names, needs){
+  names = names.map(n => n.replace(/\s+/g,' ').trim()).filter(Boolean);
+  if(!names.length) return 0;
+  const nuevos = [...new Map(names.filter(n => !S.people.some(p => norm(p.name) === norm(n))).map(n => [norm(n), n])).values()];
+  if(!nuevos.length){ toast(names.length === 1 ? `${names[0]} ya está en la lista` : 'Todas ya estaban en la lista'); return 0; }
+  snapshot();
+  for(const n of nuevos){ ensurePerson(n); S.people.find(p => p.name === n).needs = needs; }
+  commit(); renderPeopleTable();
+  const rep = names.length - nuevos.length;
+  toast(`${nuevos.length} agregada${nuevos.length>1?'s':''}` + (rep ? ` · ${rep} ya estaba${rep>1?'n':''}` : ''));
+  return nuevos.length;
+}
+$('#managePB').onclick = () => openPeople();
+$('#pdClose').onclick = () => pdlg.close();
+pdlg.addEventListener('close', () => render());
+$('#pdQ').oninput = renderPeopleTable;
+const pdAdd = () => { if(addFromDialog([$('#pdName').value], $('#pdNeeds').checked)) $('#pdName').value = ''; $('#pdName').focus(); };
+$('#pdAdd').onclick = pdAdd;
+$('#pdName').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); pdAdd(); } };
+$('#pdBulkB').onclick = () => {
+  const names = $('#pdBulk').value.split(/\r?\n/).map(l => l.split('\t')[0]);
+  if(addFromDialog(names, $('#pdNeeds').checked)) $('#pdBulk').value = '';
+};
+pdlg.querySelector('tbody').addEventListener('change', e => {
+  const tr = e.target.closest('tr[data-p]'); if(!tr) return;
+  const p = S.people.find(p => p.name === tr.dataset.p); if(!p) return;
+  const f = e.target.dataset.f;
+  if(f === 'name'){ if(renamePerson(p.name, e.target.value)){ commit(); renderPeopleTable(); } else e.target.value = p.name; }
+  if(f === 'needs'){ snapshot(); p.needs = e.target.checked; commit(); }
+  if(f === 'note'){ snapshot(); p.note = e.target.value.trim(); commit(); }
+});
+pdlg.querySelector('tbody').addEventListener('click', e => {
+  if(e.target.dataset.f !== 'del') return;
+  const tr = e.target.closest('tr[data-p]');
+  if(removePerson(tr.dataset.p)){ commit(); renderPeopleTable(); }
+});
+
+// editar
+function nextNum(f){ return Math.max(0, ...f.seats.map(s => parseInt(s.num) || 0)) + 1; }
+function addBlock(cols, rows){
+  const f = floor(), c = viewCenter(), gap = Math.round(Math.min(f.seatW, f.seatH) * 0.08);
+  const W = cols * f.seatW + (cols-1) * gap, H = rows * f.seatH + (rows-1) * gap;
+  snapshot(); let n = nextNum(f); ui.sel = new Set(); ui.zone = null;
+  for(let r=0; r<rows; r++) for(let k=0; k<cols; k++){
+    const s = {id:'s'+uid(), num:String(n++), x:snapv(c.x - W/2 + k*(f.seatW+gap)), y:snapv(c.y - H/2 + r*(f.seatH+gap)), rot:0, note:'', days:['','','','','']};
+    f.seats.push(s); ui.sel.add(s.id);
+  }
+  commit();
+}
+$('#addGrid').onclick = () => addBlock(Math.max(1, +$('#gCols').value || 1), Math.max(1, +$('#gRows').value || 1));
+$('#addSeat').onclick = () => addBlock(1, 1);
+$('#addZone').onclick = () => {
+  const f = floor(), c = viewCenter(), w = f.seatW * 4, h = f.seatH * 3;
+  snapshot(); const z = {id:'z'+uid(), x:snapv(c.x - w/2), y:snapv(c.y - h/2), w, h, label:'Zona'};
+  f.zones.push(z); ui.zone = z.id; ui.sel.clear(); commit();
+};
+$('#selbox').addEventListener('change', e => {
+  const f = floor();
+  if(e.target.id === 'zLabel'){ const z = f.zones.find(z => z.id === ui.zone); snapshot(); z.label = e.target.value; commit(); }
+  if(e.target.id === 'eNum' || e.target.id === 'eNote'){
+    const s = seatById([...ui.sel][0]); snapshot();
+    if(e.target.id === 'eNum'){
+      const v = e.target.value.trim();
+      if(f.seats.some(o => o !== s && o.num === v)) toast(`Ojo: ya existe otro puesto ${v}`);
+      s.num = v;
+    } else s.note = e.target.value.trim();
+    commit();
+  }
+});
+$('#selbox').addEventListener('click', e => {
+  const f = floor();
+  if(e.target.id === 'zDel'){ snapshot(); f.zones = f.zones.filter(z => z.id !== ui.zone); ui.zone = null; commit(); }
+  if(e.target.id === 'eRot'){ snapshot(); for(const id of ui.sel){ const s = seatById(id); s.rot = s.rot ? 0 : 1; } commit(); }
+  if(e.target.id === 'eDel') deleteSel();
+  if(e.target.id === 'eDup'){
+    snapshot(); let n = nextNum(f); const ns = new Set(), off = Math.min(f.seatW, f.seatH);
+    for(const id of ui.sel){ const s = seatById(id); const c = {...clone(s), id:'s'+uid(), num:String(n++), x:s.x+off, y:s.y+off, days:['','','','','']}; f.seats.push(c); ns.add(c.id); }
+    ui.sel = ns; commit();
+  }
+});
+function deleteSel(){
+  const f = floor(); if(!ui.sel.size) return;
+  const busy = f.seats.filter(s => ui.sel.has(s.id) && s.days.some(Boolean)).length;
+  if(busy && !confirm(`${busy} de los puestos seleccionados tienen personas asignadas. ¿Borrarlos igual?`)) return;
+  snapshot(); f.seats = f.seats.filter(s => !ui.sel.has(s.id)); ui.sel.clear(); commit();
+}
+const num = (id, fn) => $(id).onchange = e => { const v = +e.target.value; if(!(v > 0)) return render(); snapshot(); fn(floor(), v); commit(); };
+num('#fW', (f,v) => f.w = v); num('#fH', (f,v) => f.h = v); num('#sW', (f,v) => f.seatW = v); num('#sH', (f,v) => f.seatH = v);
+$('#fName').onchange = e => { snapshot(); floor().name = e.target.value.trim() || floor().name; commit(); };
+$('#bgO').oninput = e => { floor().bgOpacity = +e.target.value; renderWorld(); };
+$('#bgO').onchange = () => save();
+$('#snap').onchange = e => ui.snap = e.target.checked;
+$('#bgB').onclick = () => $('#bgF').click();
+$('#bgF').onchange = e => {
+  const file = e.target.files[0]; if(!file) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const f = floor(); snapshot();
+      S.bgs ||= {}; S.bgs[f.id] = rd.result;
+      f.h = Math.round(f.w * img.naturalHeight / img.naturalWidth);
+      commit(); fit(); toast('Plano cargado. Ahora ubica los puestos encima.');
+    };
+    img.src = rd.result;
+  };
+  rd.readAsDataURL(file); e.target.value = '';
+};
+$('#bgX').onclick = () => { if(S.bgs) delete S.bgs[floor().id]; commit(); };
+$('#renum').onclick = () => {
+  if(!confirm('Esto cambia los números de todos los puestos del piso según su posición. ¿Seguir?')) return;
+  const f = floor(), band = f.seatH * 0.6; snapshot();
+  [...f.seats].sort((a,b) => Math.abs(a.y - b.y) > band ? a.y - b.y : a.x - b.x).forEach((s,i) => s.num = String(i+1));
+  commit();
+};
+$('#delFloor').onclick = () => {
+  if(S.floors.length === 1) return toast('Debe quedar al menos un piso.');
+  if(!confirm(`¿Eliminar "${floor().name}" con todos sus puestos?`)) return;
+  snapshot(); if(S.bgs) delete S.bgs[S.cur]; S.floors = S.floors.filter(f => f.id !== S.cur); S.cur = S.floors[0].id; commit();
+};
+$('#resetB').onclick = () => {
+  if(!confirm('Se pierden todos los cambios hechos en este navegador y vuelven los datos guardados en el archivo. ¿Seguir?')) return;
+  snapshot(); Object.assign(S, clone(BASE)); ui.vb = {}; commit(); fit();
+};
+
+// exportar / respaldos
+function download(name, text, type){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+const stamp = () => new Date().toISOString().slice(0,10);
+$('#csvB').onclick = () => {
+  const f = floor(), q = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+  const seats = [...f.seats].sort((a,b) => (parseInt(a.num)||0) - (parseInt(b.num)||0) || String(a.num).localeCompare(b.num));
+  const L = [['Puesto', ...DAYN, 'Nota'].map(q).join(';'), ...seats.map(s => [s.num, ...s.days, s.note].map(q).join(';'))];
+  L.push('', ['Persona','Puestos'].map(q).join(';'));
+  const idx = personIndex();
+  for(const p of S.people){ const a = (idx.get(p.name) || []).filter(x => x.f === f); if(a.length) L.push([p.name, a.map(x => `P${x.s.num} ${DAYS[x.d]}`).join(', ')].map(q).join(';')); }
+  download(`Puestos ${f.name} ${stamp()}.csv`, '﻿' + L.join('\r\n'), 'text/csv;charset=utf-8');
+};
+$('#saveB').onclick = () => download(`Respaldo plano puestos ${stamp()}.json`, JSON.stringify(S), 'application/json');
+$('#openB').onclick = () => $('#openF').click();
+$('#openF').onchange = e => {
+  const file = e.target.files[0]; if(!file) return;
+  file.text().then(t => {
+    try{ const d = JSON.parse(t); if(!d.floors || !d.people) throw 0; snapshot(); S = d; ui.vb = {}; ui.sel.clear(); commit(); fit(); toast('Respaldo cargado.'); }
+    catch(_){ toast('Ese archivo no es un respaldo válido.'); }
+  });
+  e.target.value = '';
+};
+$('#printB').onclick = () => window.print();
+$('#undoB').onclick = undo; $('#redoB').onclick = redo;
+$('#zIn').onclick = () => zoomCenter(1/1.25); $('#zOut').onclick = () => zoomCenter(1.25); $('#zFit').onclick = fit;
+
+window.addEventListener('keydown', e => {
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !typing){ e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y' && !typing){ e.preventDefault(); redo(); return; }
+  if(typing || ui.mode !== 'editar') return;
+  if(e.key === 'Delete' || e.key === 'Backspace'){ e.preventDefault(); deleteSel(); }
+  if(e.key === 'Escape'){ ui.sel.clear(); ui.zone = null; render(); }
+  const mv = {ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,-1], ArrowDown:[0,1]}[e.key];
+  if(mv && ui.sel.size){
+    e.preventDefault(); const st = e.shiftKey ? grid()*5 : grid(); snapshot();
+    for(const id of ui.sel){ const s = seatById(id); s.x += mv[0]*st; s.y += mv[1]*st; }
+    commit();
+  }
+});
+
+let toastT;
+function toast(t){ const el = $('#toast'); el.textContent = t; el.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => el.style.opacity = 0, 2600); }
+
+render(); fit();
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+# Datos fuente: NUNCA subir (datos personales, remuneraciones, claves en hoja Apuntes)
+*.xlsb
+*.xlsx
+*.xlsm
+*.xls
+*.csv
+*.xer
+*.pdf
+~$*
+data/
+backups/
+
+# Secretos
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Django
+*.sqlite3
+# Base local: datos personales, remuneraciones y claves de Apuntes
+db/*.db
+media/
+staticfiles/
+*.log
+
+# Editores y sistema
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Plano de puestos: salida con nombres de personas
+herramientas/plano_puestos/plano_puestos.html
+Respaldo plano puestos*.json

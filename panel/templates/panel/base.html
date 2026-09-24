@@ -1,0 +1,38 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel GING - JEJ Ingeniería</title>
+  <link rel="stylesheet" href="{% static 'panel/css/styles.css' %}">
+  <link rel="stylesheet" href="{% static 'panel/css/app.css' %}">
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>GING Panel</h2>
+      <small>JEJ Ingeniería S.A.</small>
+    </div>
+    <nav>
+      <a href="{% url 'dashboard' %}" class="{% if active == 'dashboard' %}active{% endif %}">Dashboard</a>
+      {% for section, items in menu %}
+        <div class="section-title">{{ section }}</div>
+        {% for key, label in items %}
+          <a href="{% if key == 'puestos_oficina' %}{% url 'plano_puestos' %}{% else %}{% url 'list' key %}{% endif %}" class="{% if active == key %}active{% endif %}">{{ label }}</a>
+        {% endfor %}
+      {% endfor %}
+      <div class="section-title">Herramientas</div>
+      <a href="{% url 'import' %}" class="{% if active == 'import' %}active{% endif %}">Importar Excel</a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

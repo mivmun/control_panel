@@ -1,0 +1,58 @@
+{% extends 'panel/base.html' %}
+{% load panel_tags %}
+{% block content %}
+<div class="page-header">
+  <h1>Vista previa - {{ cfg.title }}</h1>
+  <a class="btn btn-ghost" href="{% url 'import' %}">Cambiar archivo</a>
+</div>
+
+{% for sheet in sheets %}
+  <div class="form-card" style="margin-bottom: 20px;">
+    <h3 class="section-sub">Hoja: {{ sheet.name }} · {{ sheet.row_count }} filas</h3>
+    {% if sheet.row_count > 0 %}
+      <form method="post" action="{% url 'import_execute' %}">
+        {% csrf_token %}
+        <input type="hidden" name="sheet" value="{{ sheet.name }}">
+        <div class="table-scroll">
+          <table class="data-table import-mapping">
+            <thead>
+              <tr>
+                <th>Columna Excel</th>
+                <th>Columna de la tabla</th>
+                <th>Ejemplo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for header in sheet.headers %}
+                <tr>
+                  <td><strong>{{ header }}</strong></td>
+                  <td>
+                    <select name="map_{{ header }}">
+                      <option value="__skip__">— omitir —</option>
+                      {% for col in columns %}
+                        <option value="{{ col }}" {% if col == header %}selected{% endif %}>{{ col }}</option>
+                      {% endfor %}
+                    </select>
+                  </td>
+                  <td>
+                    {% for row in sheet.rows %}
+                      {% if forloop.first %}
+                        {% if forloop.parentloop.counter0 < row|length %}{{ row|get_item:forloop.parentloop.counter0 }}{% endif %}
+                      {% endif %}
+                    {% endfor %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-success">Importar {{ sheet.row_count }} filas</button>
+        </div>
+      </form>
+    {% else %}
+      <p style="color: var(--text-muted);">Sin filas de datos.</p>
+    {% endif %}
+  </div>
+{% endfor %}
+{% endblock %}

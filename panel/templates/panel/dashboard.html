@@ -1,0 +1,84 @@
+{% extends 'panel/base.html' %}
+{% block content %}
+<div class="page-header">
+  <h1>Dashboard</h1>
+</div>
+
+<div class="dashboard-grid">
+  <div class="stat-card accent">
+    <div class="stat-value">{{ stats.proyectos_activos }}</div>
+    <div class="stat-label">Proyectos Activos</div>
+  </div>
+  <div class="stat-card success">
+    <div class="stat-value">{{ stats.proyectos_finalizados }}</div>
+    <div class="stat-label">Proyectos Finalizados</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="stat-value">{{ stats.contratos_activos }}</div>
+    <div class="stat-label">Contratos Activos</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ stats.personal_activo }}</div>
+    <div class="stat-label">Personal Activo</div>
+  </div>
+  <div class="stat-card accent">
+    <div class="stat-value">{{ stats.horas_totales }}</div>
+    <div class="stat-label">Horas Totales</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ stats.contabilidad_registros }}</div>
+    <div class="stat-label">Registros Contabilidad</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ stats.remuneraciones_registros }}</div>
+    <div class="stat-label">Registros Remuneraciones</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="stat-value">$ {{ stats.monto_proyectos|floatformat:0 }}</div>
+    <div class="stat-label">Monto Proyectos</div>
+  </div>
+</div>
+
+<div class="charts-row">
+  <div class="chart-card">
+    <h3>Horas por Disciplina</h3>
+    {% for item in horas_por_disciplina %}
+      <div class="hbar">
+        <div class="hbar-label">{{ item.disciplina }}</div>
+        <div class="hbar-track">
+          <div class="hbar-fill" style="width: {% widthratio item.total max_horas 100 %}%">{{ item.total|floatformat:0 }}</div>
+        </div>
+      </div>
+    {% empty %}
+      <p style="color: var(--text-muted); font-size: 13px;">Sin datos</p>
+    {% endfor %}
+  </div>
+  <div class="chart-card">
+    <h3>Personal por Disciplina</h3>
+    {% for item in personal_por_disciplina %}
+      <div class="hbar">
+        <div class="hbar-label">{{ item.disciplina }}</div>
+        <div class="hbar-track">
+          <div class="hbar-fill green" style="width: {% widthratio item.total max_personal 100 %}%">{{ item.total }}</div>
+        </div>
+      </div>
+    {% empty %}
+      <p style="color: var(--text-muted); font-size: 13px;">Sin datos</p>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="chart-card">
+  <h3>Top Usuarios por Horas</h3>
+  {% for item in ultimas_horas %}
+    <div class="hbar">
+      <div class="hbar-label">{{ item.usuario }} · {{ item.nombre_usuario }}</div>
+      <div class="hbar-track">
+        <div class="hbar-fill orange" style="width: {% widthratio item.total max_ultimas 100 %}%">{{ item.total|floatformat:0 }}</div>
+      </div>
+    </div>
+  {% empty %}
+    <p style="color: var(--text-muted); font-size: 13px;">Sin datos</p>
+  {% endfor %}
+</div>
+{% endblock %}

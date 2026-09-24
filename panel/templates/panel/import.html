@@ -1,0 +1,35 @@
+{% extends 'panel/base.html' %}
+{% block content %}
+<div class="page-header">
+  <h1>Importar desde Excel</h1>
+</div>
+
+<div class="form-card" style="max-width: 640px;">
+  {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+  {% endif %}
+  <form method="post" action="{% url 'import_preview' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="table">Tabla destino</label>
+        <select name="table" id="table" required>
+          {% for t in tables_list %}
+            <option value="{{ t }}">{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="file">Archivo Excel (.xlsx)</label>
+        <input type="file" name="file" id="file" accept=".xlsx" required>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-accent">Vista previa</button>
+    </div>
+  </form>
+  <p style="color: var(--text-muted); font-size: 12px; margin-top: 12px;">
+    El encabezado del Excel se mapeará automáticamente a las columnas de la tabla cuando los nombres coincidan.
+  </p>
+</div>
+{% endblock %}

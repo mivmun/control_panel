@@ -1,0 +1,72 @@
+{% extends 'panel/base.html' %}
+{% load panel_tags %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ cfg.title }}</h1>
+  <div>
+    <a class="btn btn-ghost btn-sm" href="{% url 'export' table 'csv' %}?search={{ search|urlencode }}">CSV</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'export' table 'xlsx' %}?search={{ search|urlencode }}">Excel</a>
+    <a class="btn btn-ghost btn-sm" href="{% url 'export' table 'pdf' %}?search={{ search|urlencode }}">PDF</a>
+    <a class="btn btn-accent btn-sm" href="{% url 'add' table %}">+ Nuevo</a>
+  </div>
+</div>
+
+<div class="table-container">
+  <div class="table-toolbar">
+    <form method="get" style="display: flex; gap: 8px; align-items: center; flex: 1;">
+      <input type="text" name="search" value="{{ search }}" placeholder="Buscar...">
+      <button type="submit" class="btn btn-primary btn-sm">Buscar</button>
+      {% if search %}<a class="btn btn-ghost btn-sm" href="{% url 'list' table %}">Limpiar</a>{% endif %}
+      <span class="badge">{{ page_obj.paginator.count }} registros</span>
+    </form>
+  </div>
+
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>
+          {% for col in cols %}
+            <th>
+              {% if col == sort %}
+                <a href="?search={{ search|urlencode }}&sort={{ col }}&order={% if order == 'asc' %}desc{% else %}asc{% endif %}" style="color: var(--accent);">
+                  {{ labels|get_item:col }}{% if order == 'asc' %} ▲{% else %} ▼{% endif %}
+                </a>
+              {% else %}
+                <a href="?search={{ search|urlencode }}&sort={{ col }}&order=asc" style="color: inherit;">{{ labels|get_item:col }}</a>
+              {% endif %}
+            </th>
+          {% endfor %}
+          <th style="width: 120px;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            {% for col in cols %}
+              <td title="{{ row|get_item:col }}">{{ row|get_item:col|default:'' }}</td>
+            {% endfor %}
+            <td>
+              <a class="btn btn-ghost btn-sm" href="{% url 'edit' table row.id %}">Editar</a>
+              <a class="btn btn-danger btn-sm" href="{% url 'delete' table row.id %}" onclick="return confirm('¿Eliminar este registro?');">Eliminar</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="{{ cols|length|add:1 }}" style="text-align:center; padding: 30px; color: var(--text-muted);">Sin registros</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    <div class="page-btns">
+      {% if page_obj.has_previous %}
+        <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.previous_page_number }}&search={{ search|urlencode }}&sort={{ sort }}&order={{ order }}">← Anterior</a>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.next_page_number }}&search={{ search|urlencode }}&sort={{ sort }}&order={{ order }}">Siguiente →</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
