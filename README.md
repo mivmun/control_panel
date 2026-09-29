@@ -12,6 +12,21 @@ para el equipo.
 
 ## Estructura
 
+```
+backend/            Python (Modelo + Vista)
+  manage.py
+  panel_ging/       configuración: settings.py, urls.py raíz, wsgi/asgi
+  panel/            la app: models.py, views.py, urls.py, registry.py, export.py
+  db/gtec.db        base local (no se versiona)
+frontend/           lo que se ve (Template)
+  templates/panel/  HTML de cada página (base.html, dashboard.html, …)
+  static/panel/     CSS
+  plano_puestos/    app HTML del plano de puestos (ver su README)
+docs/               documentación
+```
+
+Para levantar el panel: `runserver.bat` (o `python backend/manage.py runserver`).
+
 - `docs/01_modelo_datos.md`: modelo de datos v0.1 (mapa hoja → tabla, entidades, importadores,
   reglas de normalización y pendientes P1–P7).
 

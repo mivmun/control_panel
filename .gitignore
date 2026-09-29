@@ -28,7 +28,7 @@ htmlcov/
 # Django
 *.sqlite3
 # Base local: datos personales, remuneraciones y claves de Apuntes
-db/*.db
+backend/db/*.db
 media/
 staticfiles/
 *.log
@@ -40,5 +40,5 @@ Thumbs.db
 .DS_Store
 
 # Plano de puestos: salida con nombres de personas
-herramientas/plano_puestos/plano_puestos.html
+frontend/plano_puestos/plano_puestos.html
 Respaldo plano puestos*.json

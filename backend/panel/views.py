@@ -1,9 +1,10 @@
 import json
+from fractions import Fraction
 
 from django.conf import settings
 from django import forms
 from django.core.paginator import Paginator
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -66,6 +67,10 @@ def _save_form(cfg, form, instance=None):
         for k, v in kwargs.items():
             setattr(obj, k, v)
     obj.save()
+    # En Personal GING, NUMERO es el mismo ID: si se deja vacío, se completa solo.
+    if cfg['model'] is models.Personal and obj.numero is None:
+        obj.numero = obj.id
+        obj.save(update_fields=['numero'])
     return obj
 
 
@@ -237,7 +242,7 @@ def delete_view(request, table, pk):
     return render(request, 'panel/confirm_delete.html', ctx)
 
 
-PLANO_DIR = settings.BASE_DIR / 'herramientas' / 'plano_puestos'
+PLANO_DIR = settings.FRONTEND_DIR / 'plano_puestos'
 
 
 def plano_puestos(request):
@@ -251,6 +256,32 @@ def plano_puestos_app(request):
     if not path.exists():
         path = PLANO_DIR / 'plantilla.html'
     return HttpResponse(path.read_text(encoding='utf-8'))
+
+
+def _modalidad(v):
+    # "2/3" llegó del Excel convertido en número (0.666…): se vuelve a escribir como fracción.
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return v or ''
+    fr = Fraction(f).limit_denominator(5)
+    return f'{fr.numerator}/{fr.denominator}'
+
+
+def plano_puestos_personal(request):
+    # Perfil de Personal GING para el plano de puestos (sin RUT, correos ni montos).
+    # Se omiten filas sin nombre y apellido o con usuario de una letra (quedaron filas basura de una importación).
+    data = [{
+        'usuario': p.usuario,
+        'nombre': p.profesional or '',
+        'cargo': p.cargo_ctto or '',
+        'disciplina': p.disciplina or '',
+        'rol': p.rol or '',
+        'cc': p.cc,
+        'modalidad': _modalidad(p.modalidad),
+    } for p in models.Personal.objects.exclude(usuario__isnull=True).order_by('profesional')
+        if len(p.usuario.strip()) > 1 and len((p.profesional or '').split()) >= 2]
+    return JsonResponse({'personal': data})
 
 
 def import_view(request):
