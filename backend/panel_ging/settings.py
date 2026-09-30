@@ -14,7 +14,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent      # backend/
-FRONTEND_DIR = BASE_DIR.parent / 'frontend'             # templates, static, plano_puestos
+FRONTEND_DIR = BASE_DIR.parent / 'frontend'             # templates (incluye plano_puestos), static
 
 
 # Quick-start development settings - unsuitable for production

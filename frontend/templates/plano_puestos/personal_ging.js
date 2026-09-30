@@ -3,8 +3,11 @@
 // guardado, se busca por nombre (igual, o todas sus palabras dentro del nombre completo y sin dudas).
 // Cargo, disciplina, rol, CC y modalidad vienen de Personal GING y se cambian allá, no en el plano.
 // Quien no está en Personal GING queda como "Externo". El enlace se puede fijar a mano en "Editar".
+// Personal GING es la lista maestra: quien está allá y falta en el plano se agrega solo (syncGing).
 let GING = null;              // usuario → ficha
 let rawPeople = new Map();    // personas tal como vienen de los datos, sin el perfil de Personal GING
+let peopleReady = false;      // ya llegaron las personas guardadas (antes de eso no se sabe quién falta)
+const gingCreating = new Set();
 const gnorm = s => norm(s || '').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
 function gingMatch(p){
   if(!GING) return null;
@@ -18,8 +21,10 @@ function gingMatch(p){
   return sub.length === 1 ? sub[0] : null;
 }
 function enrichPeople(m){
+  if(m !== rawPeople) peopleReady = true;   // llamada desde los datos, no desde la carga de personal.json
   rawPeople = m;
   if(!GING) return m;
+  syncGing();
   const out = new Map();
   for(const [pid, p] of m){
     const r = gingMatch(p);
@@ -28,6 +33,20 @@ function enrichPeople(m){
       : {...p, ext:true});
   }
   return out;
+}
+// Agrega al plano a quien está en Personal GING y todavía no tiene su persona en el plano,
+// ya enlazada por usuario. Sin puesto; "necesita puesto" salvo que su modalidad sea 0/5 (teletrabajo).
+function syncGing(){
+  if(!GING || !peopleReady || !db) return;
+  const enlazados = new Set();
+  for(const p of rawPeople.values()){ const r = gingMatch(p); if(r) enlazados.add(r.usuario); }
+  const faltan = [...GING.values()].filter(r => !enlazados.has(r.usuario) && !gingCreating.has(r.usuario));
+  if(!faltan.length) return;
+  for(const r of faltan){
+    gingCreating.add(r.usuario);
+    savePerson(uid('p_'), {name:r.nombre, usuario:r.usuario, needs:r.modalidad !== '0/5', note:''});
+  }
+  toast(faltan.length === 1 ? `${faltan[0].nombre} agregado desde Personal GING` : `${faltan.length} personas agregadas desde Personal GING`);
 }
 (async () => {
   try{

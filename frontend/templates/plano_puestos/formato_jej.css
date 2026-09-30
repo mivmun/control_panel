@@ -1,0 +1,57 @@
+/* ---------- Formato JEJ (formato_jej.py lo pega después de los estilos de la app) ----------
+   Pisa la paleta propia de la app con la del panel (docs/02_formato_jej.md).
+   Tema claro/oscuro: el mismo que se elija en el panel (clave 'panel-tema'; sin elección, el del sistema).
+   Verde / ámbar / rojo de los puestos se mantienen porque indican estado (libre, parcial, alerta). */
+:root {
+  --bg: #F2F4F7; --panel: #FFFFFF; --panel2: #F2F4F7; --ink: #2A2D31; --muted: #64748B;
+  --line: #D4D6D9; --hover: #EAF1FA;
+  --accent: #0A4290; --accent-ink: #FFFFFF; --accent-soft: #EAF1FA;
+  --focus: #20C8FA; --danger: #B42318; --ok: #2F8A57;
+  --jej-titulo: #0A4290;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1522; --panel: #111E30; --panel2: #17263B; --ink: #E3E8EF; --muted: #94A3B8;
+    --line: #26374F; --hover: #1A2E4A;
+    --accent: #1F5FBF; --accent-ink: #FFFFFF; --accent-soft: #1A2E4A;
+    --focus: #5FC5F5; --danger: #F2857A; --ok: #5CC98A;
+    --jej-titulo: #5FC5F5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1522; --panel: #111E30; --panel2: #17263B; --ink: #E3E8EF; --muted: #94A3B8;
+  --line: #26374F; --hover: #1A2E4A;
+  --accent: #1F5FBF; --accent-ink: #FFFFFF; --accent-soft: #1A2E4A;
+  --focus: #5FC5F5; --danger: #F2857A; --ok: #5CC98A;
+  --jej-titulo: #5FC5F5;
+  color-scheme: dark;
+}
+body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+
+/* Encabezado: logo JEJ a la izquierda, título liviano en azul */
+.top { border-bottom: 0; box-shadow: inset 0 -3px 0 #0A4290; }
+.brand { align-items: center; }
+.brand::before {
+  content: ''; flex: none; width: 64px; height: 28px; margin-right: 4px;
+  background: url("/*__LOGO__*/") left center / contain no-repeat;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .brand::before { background-image: url("/*__LOGO_BLANCO__*/"); } }
+:root[data-theme="dark"] .brand::before { background-image: url("/*__LOGO_BLANCO__*/"); }
+.brand h1 { font-weight: 300; color: var(--jej-titulo); }
+.brand h1 b { font-family: inherit; font-weight: 600; color: var(--jej-titulo); }
+
+/* Puesto ocupado: azul JEJ (antes #2a5d8c) */
+.st.occ .chair { fill: #0A4290; stroke: #07306A; }
+.st.occ .back { stroke: #07306A; }
+.st.occ .desk { fill: #EAF1FA; stroke: #0A4290; }
+.st.occ .mon { fill: #0A4290; }
+.st .lock { fill: #0A4290; }
+.st .note { fill: #20C8FA; }
+.snum.occ { background: #0A4290; border-color: #07306A; color: #FFFFFF; }
+.st:focus-visible, .room:focus-visible, .elev:focus-visible { outline-color: #20C8FA; }
+
+/* Botón principal y menú abierto */
+button.primary { background: var(--accent); border-color: var(--accent); color: #FFFFFF; }
+button.primary:hover { filter: brightness(1.12); }

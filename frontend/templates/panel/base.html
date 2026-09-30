@@ -1,17 +1,22 @@
-{% load static %}<!DOCTYPE html>
+{% load static panel_tags %}<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel GING - JEJ Ingeniería</title>
-  <link rel="stylesheet" href="{% static 'panel/css/styles.css' %}">
-  <link rel="stylesheet" href="{% static 'panel/css/app.css' %}">
+  <link rel="stylesheet" href="{% static_v 'panel/css/styles.css' %}">
+  <link rel="stylesheet" href="{% static_v 'panel/css/app.css' %}">
+  <script>
+    // Tema elegido (claro/oscuro) antes de dibujar, para que no parpadee. Sin elección: el del sistema.
+    try { var t = localStorage.getItem('panel-tema'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
 </head>
 <body>
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <h2>GING Panel</h2>
-      <small>JEJ Ingeniería S.A.</small>
+      <img class="logo" src="{% static 'panel/img/logo_jej_blanco.png' %}" width="108" height="46" alt="JEJ Ingeniería Consciente">
+      <small>Panel Gerencia de Ingeniería</small>
+      <button type="button" class="tema-btn" id="tema-btn" aria-label="Cambiar tema"></button>
     </div>
     <nav>
       <a href="{% url 'dashboard' %}" class="{% if active == 'dashboard' %}active{% endif %}">Dashboard</a>
@@ -34,5 +39,22 @@
     {% endif %}
     {% block content %}{% endblock %}
   </main>
+  <script>
+    (function () {
+      // El plano de puestos (iframe) lee la misma clave 'panel-tema' y cambia a la vez.
+      var btn = document.getElementById('tema-btn');
+      var sistema = window.matchMedia('(prefers-color-scheme: dark)');
+      function actual() { return document.documentElement.dataset.theme || (sistema.matches ? 'dark' : 'light'); }
+      function pintar() { btn.textContent = actual() === 'dark' ? '☀ Modo claro' : '☾ Modo oscuro'; }
+      btn.addEventListener('click', function () {
+        var t = actual() === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = t;
+        try { localStorage.setItem('panel-tema', t); } catch (e) {}
+        pintar();
+      });
+      sistema.addEventListener('change', pintar);
+      pintar();
+    })();
+  </script>
 </body>
 </html>

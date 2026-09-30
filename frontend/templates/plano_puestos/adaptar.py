@@ -6,9 +6,12 @@ Después:  python actualizar.py   (pasa la plantilla a plano_puestos.html conser
 La app de claude.ai lee y guarda en la base de datos de claude.ai. Aquí se le pega local_db.js,
 que responde a esas mismas llamadas guardando en el navegador y partiendo de los datos del archivo.
 ajustes_p5.js fija el Piso 5 según el plano de arquitectura y deja la Sala de reuniones 1 como un puesto.
+formato_jej.py le pone el formato JEJ (colores, tipografía y logo del panel).
 Si claude.ai cambia el código y algún ajuste ya no calza, el script se detiene y dice cuál.
 """
 import os, re, sys
+
+import formato_jej
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 if len(sys.argv) < 2:
@@ -64,5 +67,6 @@ if not out.lstrip().lower().startswith('<!doctype'):
     out = ('<!doctype html>\n<html lang="es">\n<meta charset="utf-8">\n'
            '<meta name="viewport" content="width=device-width,initial-scale=1">\n') + out
 
+out = formato_jej.aplicar(out)
 open(os.path.join(HERE, 'plantilla.html'), 'w', encoding='utf-8', newline='').write(out)
 print('ok plantilla.html', len(out), 'caracteres. Ahora: python actualizar.py')

@@ -1,106 +1,276 @@
+/* ==========================================================================
+   Formato JEJ — base de todas las páginas del panel.
+   Sale del "Template PPT 2023 Nuevo logo JEJ": fondo blanco, azul JEJ
+   dominante, cian y celeste solo en detalles, logo arriba a la izquierda
+   y franja azul al pie. Tiene tema claro y oscuro (botón en la barra
+   lateral; por defecto sigue al sistema). Ver docs/02_formato_jej.md.
+   ========================================================================== */
+/* ---------- Marca (no cambian con el tema) ---------- */
 :root {
-  --primary: #1a237e;
-  --primary-light: #3949ab;
-  --accent: #ff6f00;
-  --bg-dark: #0d1117;
-  --bg-card: #161b22;
-  --bg-table: #21262d;
-  --text: #c9d1d9;
-  --text-muted: #8b949e;
-  --border: #30363d;
-  --success: #3fb950;
-  --warning: #d29922;
-  --danger: #f85149;
+  --jej-azul: #0A4290;        /* fondo portada, franja pie */
+  --jej-azul-logo: #1E418C;   /* color del logo */
+  --jej-azul-oscuro: #07306A; /* hover sobre azul */
+  --jej-cian: #20C8FA;        /* curva principal */
+  --jej-celeste: #5FC5F5;     /* curva secundaria */
+  --jej-gris: #BDBDBD;        /* curva gris de las láminas con foto */
+
+  --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --radius: 6px;
+}
+
+/* ---------- Tema claro (el de las láminas) ---------- */
+:root {
+  color-scheme: light;
+  --c-fondo: #FFFFFF;
+  --c-superficie: #FFFFFF;
+  --c-input: #FFFFFF;
+  --c-zebra: #FAFBFC;
+  --c-hover: #EAF1FA;
+  --c-drop: #DCEBFA;
+  --c-texto: #2A2D31;
+  --c-texto-suave: #64748B;
+  --c-borde: #D4D6D9;
+  --c-titulo: var(--jej-azul);
+  --c-enlace: var(--jej-azul);
+  --c-primario: var(--jej-azul);
+  --c-primario-hover: var(--jej-azul-oscuro);
+  --c-lateral: var(--jej-azul);
+  --c-lateral-activo: #FFFFFF;
+  --c-lateral-activo-texto: var(--jej-azul);
+  --c-thead: var(--jej-azul);
+  --c-thead-hover: var(--jej-azul-oscuro);
+  --c-franja: var(--jej-azul);
+  --c-foco-borde: var(--jej-azul);
+  --c-ok-fondo: #E3F4EA;
+  --c-error-fondo: #FBE4E1;
+  --success: #2F8A57;
+  --warning: #A7751A;
+  --danger: #B42318;
+  --jej-superficie: #F2F4F7;
+  --jej-superficie-azul: #EAF1FA;
+  --shadow: 0 1px 2px rgba(10, 66, 144, 0.06), 0 2px 8px rgba(10, 66, 144, 0.05);
+}
+
+/* ---------- Tema oscuro: azul noche de la marca, celeste para títulos ----------
+   Se aplica si el sistema está en oscuro (salvo que se elija "claro") o si se elige "oscuro". */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --c-fondo: #0B1522;
+    --c-superficie: #111E30;
+    --c-input: #0E1A2A;
+    --c-zebra: #0F1B2B;
+    --c-hover: #1A2E4A;
+    --c-drop: #15304F;
+    --c-texto: #E3E8EF;
+    --c-texto-suave: #94A3B8;
+    --c-borde: #26374F;
+    --c-titulo: var(--jej-celeste);
+    --c-enlace: var(--jej-celeste);
+    --c-primario: #1F5FBF;
+    --c-primario-hover: #2A6FD6;
+    --c-lateral: var(--jej-azul-oscuro);
+    --c-lateral-activo: var(--jej-azul);
+    --c-lateral-activo-texto: #FFFFFF;
+    --c-thead: var(--jej-azul);
+    --c-thead-hover: #1F5FBF;
+    --c-franja: var(--jej-azul);
+    --c-foco-borde: var(--jej-celeste);
+    --c-ok-fondo: #11301F;
+    --c-error-fondo: #3A1512;
+    --success: #5CC98A;
+    --warning: #E0B04F;
+    --danger: #F2857A;
+    --jej-superficie: #17263B;
+    --jej-superficie-azul: #1A2E4A;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.25);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --c-fondo: #0B1522;
+  --c-superficie: #111E30;
+  --c-input: #0E1A2A;
+  --c-zebra: #0F1B2B;
+  --c-hover: #1A2E4A;
+  --c-drop: #15304F;
+  --c-texto: #E3E8EF;
+  --c-texto-suave: #94A3B8;
+  --c-borde: #26374F;
+  --c-titulo: var(--jej-celeste);
+  --c-enlace: var(--jej-celeste);
+  --c-primario: #1F5FBF;
+  --c-primario-hover: #2A6FD6;
+  --c-lateral: var(--jej-azul-oscuro);
+  --c-lateral-activo: var(--jej-azul);
+  --c-lateral-activo-texto: #FFFFFF;
+  --c-thead: var(--jej-azul);
+  --c-thead-hover: #1F5FBF;
+  --c-franja: var(--jej-azul);
+  --c-foco-borde: var(--jej-celeste);
+  --c-ok-fondo: #11301F;
+  --c-error-fondo: #3A1512;
+  --success: #5CC98A;
+  --warning: #E0B04F;
+  --danger: #F2857A;
+  --jej-superficie: #17263B;
+  --jej-superficie-azul: #1A2E4A;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Alias usados por las plantillas existentes */
+:root {
+  --primary: var(--c-primario);
+  --primary-light: var(--c-primario);
+  --accent: var(--c-primario);
+  --bg-dark: var(--c-fondo);
+  --bg-card: var(--c-superficie);
+  --bg-table: var(--jej-superficie);
+  --text: var(--c-texto);
+  --text-muted: var(--c-texto-suave);
+  --border: var(--c-borde);
+  --jej-texto: var(--c-texto);
+  --jej-texto-suave: var(--c-texto-suave);
+  --jej-borde: var(--c-borde);
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font);
+  font-size: 14px;
   background: var(--bg-dark);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
+a { color: var(--c-enlace); }
+
+/* ---------- Barra lateral: azul JEJ con logo blanco (como la portada) ---------- */
 .sidebar {
   position: fixed;
   top: 0; left: 0;
   width: 260px; height: 100vh;
-  background: var(--bg-card);
-  border-right: 1px solid var(--border);
+  background: var(--c-lateral);
+  color: #fff;
   overflow-y: auto;
+  overflow-x: hidden;
   z-index: 100;
   transition: transform 0.3s;
 }
 
 .sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid var(--border);
+  padding: 26px 22px 20px;
 }
 
-.sidebar-header h2 {
-  margin: 0;
-  font-size: 18px;
-  color: #fff;
+.sidebar-header .logo {
+  display: block;
+  width: 108px;
+  height: auto;
 }
 
 .sidebar-header small {
-  color: var(--text-muted);
+  display: block;
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 11px;
+  letter-spacing: 0.4px;
 }
 
-.sidebar nav { padding: 10px 0; }
+.tema-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 14px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.tema-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+.sidebar nav { padding: 4px 0 0; }
+
+/* Curva cian de la marca: un cuarto de anillo al final del menú (nunca tapa enlaces) */
+.sidebar nav::after {
+  content: '';
+  display: block;
+  height: 170px;
+  margin-top: 24px;
+  background: radial-gradient(circle at 100% 100%,
+    transparent 0 88px, var(--jej-cian) 89px 132px, transparent 133px);
+}
 
 .sidebar nav a {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 20px;
-  color: var(--text-muted);
+  margin: 1px 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  color: rgba(255, 255, 255, 0.82);
   text-decoration: none;
   font-size: 14px;
-  transition: all 0.2s;
+  transition: background 0.15s, color 0.15s;
 }
 
 .sidebar nav a:hover {
-  background: var(--bg-table);
+  background: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
 
 .sidebar nav a.active {
-  color: var(--accent);
-  background: rgba(255, 111, 0, 0.1);
-  border-left: 3px solid var(--accent);
+  background: var(--c-lateral-activo);
+  color: var(--c-lateral-activo-texto);
+  font-weight: 600;
 }
 
 .sidebar nav .section-title {
-  padding: 15px 20px 5px;
-  font-size: 11px;
+  padding: 18px 22px 6px;
+  font-size: 10.5px;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-muted);
+  letter-spacing: 1.6px;
+  color: var(--jej-celeste);
 }
 
+/* ---------- Contenido ---------- */
 .main-content {
   margin-left: 260px;
-  padding: 20px 30px;
+  padding: 28px 36px 56px;
   min-height: 100vh;
+}
+
+/* Franja azul al pie, igual que las láminas de contenido */
+.main-content::after {
+  content: '';
+  position: fixed;
+  left: 260px; right: 0; bottom: 0;
+  height: 8px;
+  background: var(--c-franja);
+  z-index: 50;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 22px;
 }
 
 .page-header h1 {
   margin: 0;
-  font-size: 24px;
-  color: #fff;
+  font-size: 26px;
+  font-weight: 300;
+  color: var(--c-titulo);
 }
 
-/* Dashboard */
+/* ---------- Dashboard ---------- */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -108,27 +278,28 @@ body {
   margin-bottom: 24px;
 }
 
+/* Tarjeta de cifra, como "81% / US$104.549 M" de la presentación */
 .stat-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
 }
 
 .stat-card .stat-value {
-  font-size: 28px;
-  font-weight: bold;
-  color: #fff;
+  font-size: 30px;
+  font-weight: 300;
+  color: var(--c-titulo);
 }
 
 .stat-card .stat-label {
   font-size: 12px;
   color: var(--text-muted);
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
-.stat-card.accent .stat-value { color: var(--accent); }
+.stat-card.accent .stat-value { color: var(--c-titulo); }
 .stat-card.success .stat-value { color: var(--success); }
 .stat-card.warning .stat-value { color: var(--warning); }
 .stat-card.danger .stat-value { color: var(--danger); }
@@ -143,14 +314,16 @@ body {
 .chart-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   padding: 20px;
 }
 
 .chart-card h3 {
   margin: 0 0 15px;
-  font-size: 14px;
-  color: #fff;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--c-titulo);
 }
 
 .chart-bar {
@@ -174,13 +347,13 @@ body {
   flex: 1;
   height: 20px;
   background: var(--bg-table);
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .chart-bar .bar-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 3px;
   transition: width 0.5s;
   display: flex;
   align-items: center;
@@ -189,15 +362,17 @@ body {
   color: #fff;
 }
 
-.chart-bar .bar-fill.blue { background: var(--primary-light); }
-.chart-bar .bar-fill.orange { background: var(--accent); }
-.chart-bar .bar-fill.green { background: var(--success); }
+/* Series: azul JEJ, celeste, cian (en ese orden de peso) */
+.chart-bar .bar-fill.blue { background: var(--c-primario); }
+.chart-bar .bar-fill.orange { background: var(--jej-celeste); color: var(--jej-azul-oscuro); }
+.chart-bar .bar-fill.green { background: var(--jej-cian); color: var(--jej-azul-oscuro); }
 
-/* Table */
+/* ---------- Tablas ---------- */
 .table-container {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
@@ -213,43 +388,47 @@ body {
 
 .table-toolbar input,
 .table-toolbar select {
-  background: var(--bg-table);
+  background: var(--c-input);
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 7px 12px;
+  border-radius: var(--radius);
   font-size: 13px;
+  font-family: inherit;
 }
 
 .table-toolbar input:focus,
 .table-toolbar select:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--c-foco-borde);
+  box-shadow: 0 0 0 3px rgba(32, 200, 250, 0.25);
 }
 
 .btn {
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: none;
+  padding: 7px 16px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
-  transition: all 0.2s;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 5px;
 }
 
-.btn-primary { background: var(--primary-light); color: #fff; }
-.btn-primary:hover { background: var(--primary); }
-.btn-accent { background: var(--accent); color: #fff; }
-.btn-accent:hover { opacity: 0.9; }
-.btn-success { background: var(--success); color: #fff; }
-.btn-danger { background: var(--danger); color: #fff; }
-.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
-.btn-ghost:hover { color: #fff; border-color: var(--text-muted); }
-.btn-sm { padding: 4px 8px; font-size: 12px; }
+.btn-primary,
+.btn-accent { background: var(--c-primario); color: #fff; }
+.btn-primary:hover,
+.btn-accent:hover { background: var(--c-primario-hover); }
+/* Fondos fijos: con texto blanco se leen igual en los dos temas */
+.btn-success { background: #2F8A57; color: #fff; }
+.btn-danger { background: #B42318; color: #fff; }
+.btn-ghost { background: var(--c-superficie); color: var(--c-enlace); border-color: var(--border); }
+.btn-ghost:hover { border-color: var(--c-enlace); background: var(--c-hover); }
+.btn-sm { padding: 4px 9px; font-size: 12px; }
 
 .data-table {
   width: 100%;
@@ -258,21 +437,21 @@ body {
 }
 
 .data-table th {
-  background: var(--bg-table);
+  background: var(--c-thead);
   padding: 10px 12px;
   text-align: left;
-  font-weight: 600;
-  color: var(--text-muted);
-  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  font-size: 11.5px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--border);
   cursor: pointer;
   white-space: nowrap;
   user-select: none;
 }
 
-.data-table th:hover { color: #fff; }
+.data-table th a { color: #fff !important; text-decoration: none; }
+.data-table th:hover { background: var(--c-thead-hover); }
 
 .data-table td {
   padding: 8px 12px;
@@ -283,9 +462,8 @@ body {
   white-space: nowrap;
 }
 
-.data-table tr:hover td {
-  background: rgba(255, 255, 255, 0.03);
-}
+.data-table tbody tr:nth-child(even) td { background: var(--c-zebra); }
+.data-table tr:hover td { background: var(--c-hover) !important; }
 
 .pagination {
   display: flex;
@@ -302,12 +480,12 @@ body {
   gap: 4px;
 }
 
-/* Modal */
+/* ---------- Modal ---------- */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.7);
+  background: rgba(7, 48, 106, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -315,13 +493,13 @@ body {
 }
 
 .modal-content {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--c-superficie);
+  border-radius: 10px;
   width: 90%;
   max-width: 600px;
   max-height: 80vh;
   overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(7, 48, 106, 0.25);
 }
 
 .modal-header {
@@ -335,6 +513,8 @@ body {
 .modal-header h2 {
   margin: 0;
   font-size: 18px;
+  font-weight: 300;
+  color: var(--c-titulo);
 }
 
 .modal-body { padding: 20px; }
@@ -354,12 +534,13 @@ body {
 .modal-body select,
 .modal-body textarea {
   width: 100%;
-  background: var(--bg-table);
+  background: var(--c-input);
   border: 1px solid var(--border);
   color: var(--text);
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius);
   font-size: 13px;
+  font-family: inherit;
 }
 
 .modal-body textarea { min-height: 60px; resize: vertical; }
@@ -372,7 +553,7 @@ body {
   border-top: 1px solid var(--border);
 }
 
-/* Loading */
+/* ---------- Carga ---------- */
 .loading {
   text-align: center;
   padding: 40px;
@@ -382,7 +563,7 @@ body {
 .spinner {
   width: 30px; height: 30px;
   border: 3px solid var(--border);
-  border-top-color: var(--accent);
+  border-top-color: var(--jej-cian);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   display: inline-block;
@@ -391,18 +572,19 @@ body {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Office map */
+/* ---------- Mapa de oficina ---------- */
 .office-map {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 20px;
   margin-bottom: 16px;
 }
 
 .office-map h3 {
   margin: 0 0 15px;
-  color: #fff;
+  font-weight: 400;
+  color: var(--c-titulo);
 }
 
 .floor-grid {
@@ -414,7 +596,7 @@ body {
 .puesto-card {
   background: var(--bg-table);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 12px;
 }
 
@@ -425,7 +607,7 @@ body {
 
 .puesto-card .puesto-name {
   font-size: 14px;
-  color: #fff;
+  color: var(--c-titulo);
   margin: 4px 0;
 }
 
@@ -439,41 +621,44 @@ body {
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 4px;
-  background: var(--bg-dark);
+  background: var(--c-superficie);
   color: var(--text-muted);
 }
 
 .puesto-card .dia-badge.active {
-  background: var(--success);
+  background: var(--c-primario);
   color: #fff;
 }
 
-/* Mobile */
+/* ---------- Móvil ---------- */
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
-  .main-content { margin-left: 0; }
+  .main-content { margin-left: 0; padding: 20px 16px 48px; }
+  .main-content::after { left: 0; }
   .charts-row { grid-template-columns: 1fr; }
   .dashboard-grid { grid-template-columns: 1fr 1fr; }
 }
 
-/* Bar chart horizontal */
+/* ---------- Barras horizontales ---------- */
 .hbar { display: flex; align-items: center; margin-bottom: 4px; }
 .hbar .hbar-label { width: 140px; font-size: 11px; color: var(--text-muted); text-align: right; padding-right: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hbar .hbar-track { flex: 1; height: 18px; background: var(--bg-table); border-radius: 3px; overflow: hidden; }
-.hbar .hbar-fill { height: 100%; border-radius: 3px; background: var(--primary-light); display: flex; align-items: center; padding-left: 6px; font-size: 10px; color: #fff; min-width: 30px; }
+.hbar .hbar-fill { height: 100%; border-radius: 3px; background: var(--c-primario); display: flex; align-items: center; padding-left: 6px; font-size: 10px; color: #fff; min-width: 30px; }
+.hbar .hbar-fill.green { background: var(--jej-celeste); color: var(--jej-azul-oscuro); }
+.hbar .hbar-fill.orange { background: var(--jej-cian); color: var(--jej-azul-oscuro); }
 
-/* Inline editing */
+/* ---------- Edición en línea ---------- */
 .data-table td[data-col] { cursor: pointer; position: relative; }
-.data-table td[data-col]:hover { background: rgba(255, 111, 0, 0.08) !important; }
+.data-table td[data-col]:hover { background: var(--c-hover) !important; }
 
 .cell-text { display: block; }
 .cell-input {
   display: none;
   width: 100%;
-  background: var(--bg-dark);
-  border: 2px solid var(--accent);
-  color: #fff;
+  background: var(--c-input);
+  border: 2px solid var(--c-foco-borde);
+  color: var(--text);
   padding: 4px 6px;
   border-radius: 4px;
   font-size: 13px;
@@ -490,23 +675,23 @@ body {
 .data-table td.editing .cell-text { display: none; }
 .data-table td.editing .cell-input { display: block; }
 
-/* Paste modal */
+/* ---------- Pegado desde Excel ---------- */
 #pastePreview { font-family: monospace; font-size: 12px; overflow: auto; max-height: 400px; }
 #pastePreview table { width: 100%; border-collapse: collapse; }
-#pastePreview th { background: var(--bg-card); padding: 6px 8px; text-align: left; font-size: 11px; color: var(--accent); border-bottom: 1px solid var(--border); }
+#pastePreview th { background: var(--c-thead); padding: 6px 8px; text-align: left; font-size: 11px; color: #fff; }
 #pastePreview td { padding: 4px 8px; border-bottom: 1px solid var(--border); color: var(--text); }
 
-/* Drop zone for Excel upload */
+/* ---------- Zona para soltar Excel ---------- */
 .drop-zone {
-  border: 2px dashed var(--border);
-  border-radius: 8px;
+  border: 2px dashed var(--jej-celeste);
+  border-radius: var(--radius);
   padding: 40px 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
-  background: var(--bg-table);
+  background: var(--c-hover);
 }
-.drop-zone:hover { border-color: var(--accent); background: rgba(255, 111, 0, 0.05); }
-.drop-zone.drag-over { border-color: var(--accent); background: rgba(255, 111, 0, 0.1); transform: scale(1.01); }
+.drop-zone:hover { border-color: var(--c-foco-borde); }
+.drop-zone.drag-over { border-color: var(--c-foco-borde); background: var(--c-drop); transform: scale(1.01); }
 .drop-zone-content p { margin: 4px 0; color: var(--text-muted); font-size: 13px; }
 .drop-zone-icon { font-size: 32px; margin-bottom: 8px; }

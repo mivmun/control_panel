@@ -34,7 +34,7 @@ TABLES = {
     'personal': {
         'model': models.Personal,
         'title': 'Personal GING',
-        'search': ['usuario', 'profesional', 'disciplina', 'rol', 'cargo_ctto'],
+        'search': ['usuario', 'nombre', 'apellido_paterno', 'apellido_materno', 'disciplina', 'rol', 'cargo_ctto'],
         'order': 'id',
     },
     'personal_contratos': {

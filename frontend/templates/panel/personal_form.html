@@ -1,0 +1,103 @@
+{% extends 'panel/base.html' %}
+{% block content %}
+<div class="page-header">
+  <h1>{% if persona %}Editar · {{ persona.nombre_completo }}{% else %}Nueva persona · Personal GING{% endif %}</h1>
+  {% if persona %}<small class="pf-numero">N° {{ persona.numero }}</small>{% endif %}
+</div>
+
+<div class="form-card">
+  <form method="post" id="personal-form" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="alert alert-error">{{ form.non_field_errors|join:" " }}</div>
+    {% endif %}
+
+    {% for titulo, campos in secciones %}
+      <fieldset class="pf-section">
+        <legend>{{ titulo }}</legend>
+        <div class="form-grid">
+          {% for field in campos %}
+            <div class="form-group{% if field.errors %} has-error{% endif %}">
+              <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="pf-req">*</span>{% endif %}</label>
+              {{ field }}
+              {% for error in field.errors %}<small class="pf-error">{{ error }}</small>{% endfor %}
+              {% if field.name == 'rut' %}<small class="pf-hint" id="rut-estado"></small>{% endif %}
+            </div>
+
+            {% if field.name == 'rut' %}
+              {# Calculados desde RUT: solo lectura, el servidor los vuelve a calcular al guardar. #}
+              <div class="form-group">
+                <label for="rut_jej">RUT JEJ <span class="pf-auto">auto</span></label>
+                <input type="text" id="rut_jej" value="{{ persona.rut_jej|default:'' }}" readonly tabindex="-1">
+              </div>
+              <div class="form-group">
+                <label for="rut_sp">RUT SP <span class="pf-auto">auto</span></label>
+                <input type="text" id="rut_sp" value="{{ persona.rut_sp|default:'' }}" readonly tabindex="-1">
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </fieldset>
+    {% endfor %}
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-accent">Guardar</button>
+      <a class="btn btn-ghost" href="{% url 'list' 'personal' %}">Cancelar</a>
+      {% if persona %}<a class="btn btn-ghost pf-delete" href="{% url 'delete' 'personal' persona.pk %}">Eliminar</a>{% endif %}
+    </div>
+  </form>
+</div>
+
+{% for nombre, valores in listas.items %}
+  <datalist id="dl-{{ nombre }}">{% for v in valores %}<option value="{{ v }}">{% endfor %}</datalist>
+{% endfor %}
+{{ cargos|json_script:"cargos-data" }}
+
+<script>
+(function () {
+  // Misma regla que panel/rut.py: el servidor manda al guardar, esto es solo vista previa.
+  const rut = document.getElementById('id_rut');
+  const jej = document.getElementById('rut_jej');
+  const sp = document.getElementById('rut_sp');
+  const estado = document.getElementById('rut-estado');
+
+  const puntos = c => c.split('').reverse().join('').match(/\d{1,3}/g).join('.').split('').reverse().join('');
+  function dv(cuerpo) {
+    let suma = 0, f = 2;
+    for (const d of cuerpo.split('').reverse()) { suma += +d * f; f = f === 7 ? 2 : f + 1; }
+    const r = 11 - (suma % 11);
+    return r === 11 ? '0' : r === 10 ? 'K' : String(r);
+  }
+  function actualizarRut(formatear) {
+    const limpio = rut.value.replace(/[\s.\-]/g, '').toUpperCase();
+    const m = limpio.match(/^(\d{1,9})([\dK])$/);
+    if (!m) {
+      jej.value = sp.value = '';
+      estado.textContent = limpio ? 'Formato incompleto' : '';
+      estado.className = 'pf-hint';
+      return;
+    }
+    const cuerpo = m[1].replace(/^0+(?=\d)/, ''), d = m[2];
+    const ok = dv(cuerpo) === d;
+    jej.value = puntos(cuerpo.padStart(9, '0')) + '-' + d;
+    sp.value = cuerpo + '-' + d;
+    estado.textContent = ok ? 'RUT válido' : 'Dígito verificador incorrecto';
+    estado.className = 'pf-hint ' + (ok ? 'ok' : 'bad');
+    if (formatear) rut.value = puntos(cuerpo) + '-' + d;
+  }
+  rut.addEventListener('input', () => actualizarRut(false));
+  rut.addEventListener('blur', () => actualizarRut(true));
+  actualizarRut(false);
+
+  // Al elegir un cargo de Cargos GING se proponen su rol y disciplina (se pueden cambiar).
+  const cargos = JSON.parse(document.getElementById('cargos-data').textContent);
+  const cargo = document.getElementById('id_cargo_ctto');
+  cargo.addEventListener('change', () => {
+    const c = cargos[cargo.value];
+    if (!c) return;
+    if (c.rol) document.getElementById('id_rol').value = c.rol;
+    if (c.disciplina) document.getElementById('id_disciplina').value = c.disciplina;
+  });
+})();
+</script>
+{% endblock %}

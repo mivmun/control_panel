@@ -1,6 +1,8 @@
 
 from django.db import models
 
+from . import rut
+
 
 class AnalisisRemuneraciones2026(models.Model):
     datos = models.TextField(blank=True, null=True)
@@ -156,9 +158,11 @@ class Organigrama(models.Model):
 class Personal(models.Model):
     numero = models.IntegerField(blank=True, null=True)
     usuario = models.TextField(blank=True, null=True)
-    profesional = models.TextField(blank=True, null=True)
-    rut_jej = models.TextField(blank=True, null=True)
+    nombre = models.TextField(blank=True, null=True)
+    apellido_paterno = models.TextField(blank=True, null=True)
+    apellido_materno = models.TextField(blank=True, null=True)
     rut = models.TextField(blank=True, null=True)
+    rut_jej = models.TextField(blank=True, null=True)
     rut_sp = models.TextField(blank=True, null=True)
     fecha_ingreso = models.TextField(blank=True, null=True)
     cc = models.IntegerField(blank=True, null=True)
@@ -177,6 +181,20 @@ class Personal(models.Model):
     class Meta:
         managed = False
         db_table = 'personal'
+
+    @property
+    def nombre_completo(self):
+        return ' '.join(x for x in (self.nombre, self.apellido_paterno, self.apellido_materno) if x)
+
+    def __str__(self):
+        return self.nombre_completo
+
+    def save(self, *args, **kwargs):
+        # rut_jej y rut_sp no se escriben: salen de rut (formulario, importación o admin).
+        f = rut.formatos(self.rut)
+        if f:
+            self.rut, self.rut_jej, self.rut_sp = f
+        super().save(*args, **kwargs)
 
 
 class PersonalContratos(models.Model):

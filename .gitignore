@@ -40,5 +40,5 @@ Thumbs.db
 .DS_Store
 
 # Plano de puestos: salida con nombres de personas
-frontend/plano_puestos/plano_puestos.html
+frontend/templates/plano_puestos/plano_puestos.html
 Respaldo plano puestos*.json

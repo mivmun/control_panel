@@ -21,6 +21,9 @@ La app viene de "Puestos Piso 5" en claude.ai. Allá guarda en la base de datos 
   usuario, nombre, cargo, disciplina, rol, CC y modalidad; sin RUT, correos ni montos). El enlace es por
   usuario; si no hay, por nombre. Cargo y disciplina se cambian en Personal GING. Quien no está ahí aparece
   como "Externo". En "Editar" se puede fijar el enlace a mano. Fuera del panel (doble clic) no hay enlace.
+- `formato_jej.css` / `formato_jej.py`: formato JEJ (paleta, tipografía y logo del panel, ver
+  `docs/02_formato_jej.md`). `adaptar.py` lo aplica solo; para rehacerlo sobre la plantilla actual:
+  `python formato_jej.py` y luego `python actualizar.py`.
 - `plantilla.html`: la app sin datos (se puede versionar).
 - `plano_puestos.html`: la app con los datos incrustados. **Contiene nombres de personas → no se
   versiona** (ver `.gitignore`).
@@ -29,8 +32,8 @@ La app viene de "Puestos Piso 5" en claude.ai. Allá guarda en la base de datos 
 Cuando llegue una versión nueva de la app desde claude.ai:
 
 ```
-python frontend/plano_puestos/adaptar.py "Puestos Piso 5 - app.txt"
-python frontend/plano_puestos/actualizar.py [respaldo.json]
+python frontend/templates/plano_puestos/adaptar.py "Puestos Piso 5 - app.txt"
+python frontend/templates/plano_puestos/actualizar.py [respaldo.json]
 ```
 
 Sin respaldo conserva los datos que ya trae `plano_puestos.html`. Con un respaldo (.json de
