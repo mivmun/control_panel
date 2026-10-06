@@ -66,6 +66,18 @@ const LOCAL = (() => {
     if(!st) st = fromAny(clone(SEED));
     st = st || {docs:{}, assets:{}};
     docs = st.docs; assets = st.assets;
+    if(sweep()) setTimeout(save, 0);
+  }
+  // Un piso existe mientras exista admin-pisos/<id>. Sin él, se borran sus datos (admin-pisos/<id>/... y
+  // pisos/<id>/...) y las imágenes de plano que ya no usa ningún piso. Corre al eliminar un piso y al abrir,
+  // para limpiar lo que dejaron pisos eliminados antes. El Piso 5 usa otras colecciones y no se toca.
+  function sweep(){
+    const live = new Set(Object.keys(docs).filter(p => /^admin-pisos\/[^/]+$/.test(p)).map(p => p.split('/')[1]));
+    let n = 0;
+    for(const p of Object.keys(docs)){ const m = /^(?:admin-pisos|pisos)\/([^/]+)\//.exec(p); if(m && !live.has(m[1])){ delete docs[p]; n++; } }
+    const used = new Set([...live].map(f => docs['admin-pisos/' + f].bg).filter(Boolean));
+    for(const id of Object.keys(assets)) if(!used.has(id)){ delete assets[id]; n++; }
+    return n;
   }
   function save(){
     clearTimeout(saveT); saveT = null;
@@ -128,7 +140,7 @@ const LOCAL = (() => {
       get:async () => { init(); return dsnap(path); },
       set:async data => { init(); if(!isObj(data)) return bad('El documento debe ser un objeto'); docs[path] = clone(data); changed(); },
       update:async data => { init(); if(docs[path] === undefined) return bad('El documento no existe'); merge(docs[path], data); changed(); },
-      delete:async () => { init(); if(docs[path] !== undefined){ delete docs[path]; changed(); } },
+      delete:async () => { init(); if(docs[path] !== undefined){ delete docs[path]; if(/^admin-pisos\/[^/]+$/.test(path)) sweep(); changed(); } },
       acquire:async () => ({acquired:true, version:1, expiresAt:new Date(Date.now() + 5000).toISOString(), holder:ME}),
       onSnapshot:next => { init(); let last = {}; return listen(() => { const t = JSON.stringify(docs[path]); if(t === last) return; last = t; next(dsnap(path)); }); },
       collection:p => colRef(path + '/' + p),

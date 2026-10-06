@@ -129,7 +129,7 @@ seatSVG = function(s, hl){
   // Muebles de la Sala 2 con el tamaño real de sus mesas (las del plano miden 51,7 × 25,9).
   const baseRooms = renderRooms;
   renderRooms = function(){
-    if(!fixedPlan()) return baseRooms();
+    if(!fixedPlan() && (floors.get(FID) || {}).base !== 'p5') return baseRooms();   // también en las copias del Piso 5
     const g = G; G = {...G, deskW:51.7, deskD:25.9};
     try{ baseRooms(); } finally { G = g; }
   };

@@ -9,7 +9,9 @@ La app viene de "Puestos Piso 5" en claude.ai. Allá guarda en la base de datos 
 `local_db.js` responde a esas mismas llamadas guardando en el navegador (localStorage), así que
 **los datos de claude.ai y los del panel no se sincronizan**.
 
-- `local_db.js`: reemplazo local de la base de datos, usuario, descargas e imágenes de claude.ai.
+- `local_db.js`: reemplazo local de la base de datos, usuario, descargas e imágenes de claude.ai. Al
+  eliminar un piso borra también todos sus datos y su imagen de plano si ningún otro piso la usa (y al abrir
+  limpia lo que hayan dejado pisos eliminados antes).
 - `ajustes_p5.js`: Piso 5 fijo según el plano de arquitectura (`Z:\00 Control de Gestion GTE\26 Oficina
   Casa Matriz\07 Puestos Oficina\JeJ-Habilitacion-Piso 5_Anteproyecto_Puestos de Trabajo.pdf`): posición de
   cada silla y tamaño real de cada mesa, sacados del PDF. En Piso 5 los puestos no se mueven, giran,
@@ -21,6 +23,17 @@ La app viene de "Puestos Piso 5" en claude.ai. Allá guarda en la base de datos 
   usuario, nombre, cargo, disciplina, rol, CC y modalidad; sin RUT, correos ni montos). El enlace es por
   usuario; si no hay, por nombre. Cargo y disciplina se cambian en Personal GING. Quien no está ahí aparece
   como "Externo". En "Editar" se puede fijar el enlace a mano. Fuera del panel (doble clic) no hay enlace.
+- `grupos.js`: los puestos de un bloque ("+ Agregar bloque") quedan agrupados y en "Ordenar plano" se
+  mueven juntos. Al elegir un puesto: "Desagrupar", o "Agrupar" con las mesas que se tocan con la suya
+  (para bloques armados antes). "Girar bloque 90°" gira el bloque entero. No aplica en Piso 5, que es fijo.
+- `config_pisos.js`: Administración → "Configuración de pisos": lista todos los pisos para ir, duplicar o
+  eliminar cualquiera, y crear uno nuevo. Duplicar copia el plano y los puestos; opcionalmente las personas y
+  sus puestos. Los pisos copiados comparten la imagen del plano. Una copia del Piso 5 usa su plano de
+  arquitectura, pero sus puestos sí se mueven. El Piso 5 no se elimina.
+- `lockers.js`: los closets de Oficina A (18 lockers) y Oficina B (20) del Piso 5 son un botón en el plano. Al
+  tocarlo se abre a la derecha la lista: número, dueño (elegido desde Personal GING) y cuántas llaves hay; arriba,
+  el resumen (asignados, libres, llaves y lockers sin llave). Administración lo edita tocando un locker. Se guarda
+  en la colección `lockers` (A01…A18, B01…B20); al liberar un locker sus llaves se mantienen.
 - `formato_jej.css` / `formato_jej.py`: formato JEJ (paleta, tipografía y logo del panel, ver
   `docs/02_formato_jej.md`). `adaptar.py` lo aplica solo; para rehacerlo sobre la plantilla actual:
   `python formato_jej.py` y luego `python actualizar.py`.

@@ -7,6 +7,7 @@
     <a class="btn btn-ghost btn-sm" href="{% url 'export' table 'csv' %}?search={{ search|urlencode }}">CSV</a>
     <a class="btn btn-ghost btn-sm" href="{% url 'export' table 'xlsx' %}?search={{ search|urlencode }}">Excel</a>
     <a class="btn btn-ghost btn-sm" href="{% url 'export' table 'pdf' %}?search={{ search|urlencode }}">PDF</a>
+    {% if table == 'personal' %}<a class="btn btn-ghost btn-sm" href="{% url 'personal_importar' %}">Importar Excel</a>{% endif %}
     <a class="btn btn-accent btn-sm" href="{% url 'add' table %}">+ Nuevo</a>
   </div>
 </div>

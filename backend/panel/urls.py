@@ -8,6 +8,7 @@ urlpatterns = [
     path('importar/', views.import_view, name='import'),
     path('importar/preview/', views.import_preview, name='import_preview'),
     path('importar/ejecutar/', views.import_execute, name='import_execute'),
+    path('personal/importar/', views.personal_importar, name='personal_importar'),
     path('puestos_oficina/plano/', views.plano_puestos, name='plano_puestos'),
     path('puestos_oficina/plano/app/', views.plano_puestos_app, name='plano_puestos_app'),
     path('puestos_oficina/plano/app/personal.json', views.plano_puestos_personal, name='plano_puestos_personal'),

@@ -1,0 +1,85 @@
+{% extends 'panel/base.html' %}
+{% block content %}
+<div class="page-header">
+  <h1>Importar Excel · Personal GING</h1>
+  <div><a class="btn btn-ghost btn-sm" href="{% url 'list' 'personal' %}">← Volver a Personal GING</a></div>
+</div>
+
+{% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+
+{% if not plan %}
+<div class="form-card" style="max-width: 720px;">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="archivo">Archivo Excel (.xlsx)</label>
+      <input type="file" name="archivo" id="archivo" accept=".xlsx" required>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-accent">Revisar archivo</button>
+    </div>
+  </form>
+  <p style="color: var(--text-muted); font-size: 13px; margin-top: 14px;">
+    Agrega a las personas que faltan y completa los datos que están vacíos en el panel. Lo que ya tiene
+    valor no se cambia. Antes de guardar vas a ver qué cambia.
+  </p>
+  <p style="color: var(--text-muted); font-size: 13px;">
+    El Excel debe tener exactamente las columnas de Personal GING (las de "Excel" en la lista), en cualquier
+    orden; si falta o sobra alguna, se rechaza: {{ columnas|join:", " }}.
+  </p>
+</div>
+{% else %}
+<div class="form-card">
+  <p style="margin-top: 0;"><b>{{ plan.archivo }}</b>: {{ plan.filas }} fila{{ plan.filas|pluralize }} con datos.</p>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+    <span class="badge">{{ plan.nuevos|length }} persona{{ plan.nuevos|length|pluralize }} nueva{{ plan.nuevos|length|pluralize }}</span>
+    <span class="badge">{{ plan.completar|length }} con datos por completar</span>
+    <span class="badge">{{ plan.diferencias|length }} diferencia{{ plan.diferencias|length|pluralize }} (no se cambian)</span>
+    <span class="badge">{{ plan.omitidas|length }} fila{{ plan.omitidas|length|pluralize }} omitida{{ plan.omitidas|length|pluralize }}</span>
+  </div>
+
+  {% if plan.nuevos %}
+  <h3>Se agregan</h3>
+  <div class="table-scroll"><table class="data-table">
+    <thead><tr><th>Fila</th><th>Nombre</th><th>RUT</th><th>Usuario</th><th>Cargo</th><th>Disciplina</th></tr></thead>
+    <tbody>{% for n in plan.nuevos %}<tr><td>{{ n.fila }}</td><td>{{ n.nombre }}</td><td>{{ n.datos.rut|default:'' }}</td><td>{{ n.datos.usuario|default:'' }}</td><td>{{ n.datos.cargo_ctto|default:'' }}</td><td>{{ n.datos.disciplina|default:'' }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% endif %}
+
+  {% if plan.completar %}
+  <h3>Se completan (campos vacíos en el panel)</h3>
+  <div class="table-scroll"><table class="data-table">
+    <thead><tr><th>Persona</th><th>Campos</th></tr></thead>
+    <tbody>{% for c in plan.completar %}<tr><td>{{ c.nombre }}</td><td>{{ c.lista }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% endif %}
+
+  {% if plan.diferencias %}
+  <h3>Diferencias que no se cambian</h3>
+  <p style="color: var(--text-muted); font-size: 13px;">El panel ya tiene un valor distinto. Si el del Excel es el correcto, cámbialo en "Editar".</p>
+  <div class="table-scroll"><table class="data-table">
+    <thead><tr><th>Persona</th><th>Campo</th><th>En el panel</th><th>En el Excel</th></tr></thead>
+    <tbody>{% for d in plan.diferencias %}<tr><td>{{ d.nombre }}</td><td>{{ d.campo }}</td><td>{{ d.panel }}</td><td>{{ d.excel }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% endif %}
+
+  {% if plan.omitidas %}
+  <h3>Filas omitidas</h3>
+  <div class="table-scroll"><table class="data-table">
+    <thead><tr><th>Fila</th><th>Motivo</th></tr></thead>
+    <tbody>{% for o in plan.omitidas %}<tr><td>{{ o.fila }}</td><td>{{ o.motivo }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% endif %}
+
+  <form method="post" class="form-actions" style="margin-top: 18px;">
+    {% csrf_token %}
+    {% if plan.nuevos or plan.completar %}
+      <button type="submit" name="accion" value="aplicar" class="btn btn-accent">Importar</button>
+    {% else %}
+      <span style="align-self: center;">No hay nada que importar: el panel ya tiene todo lo del Excel.</span>
+    {% endif %}
+    <button type="submit" name="accion" value="cancelar" class="btn btn-ghost">Cancelar</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

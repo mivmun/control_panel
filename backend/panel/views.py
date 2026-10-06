@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 
-from . import models
+from . import importar_personal, models
 from .forms import TURNOS, PersonalForm, modalidad_fraccion
 from .registry import MENU, TABLES, editable_fields
 
@@ -259,6 +259,39 @@ def personal_form(request, pk=None):
         },
     })
     return render(request, 'panel/personal_form.html', ctx)
+
+
+def personal_importar(request):
+    """Importar Excel en Personal GING: subir → ver qué cambia → confirmar (ver importar_personal.py)."""
+    ctx = _context(request, {'active': 'personal', 'table': 'personal',
+                             'columnas': [c.replace('_', ' ') for c in importar_personal.COLUMNAS]})
+    if request.method == 'POST' and request.POST.get('accion') == 'aplicar':
+        plan = request.session.pop('personal_import', None)
+        if not plan:
+            messages.error(request, 'La vista previa ya no está disponible. Sube el archivo de nuevo.')
+            return redirect('personal_importar')
+        agregados, completados = importar_personal.aplicar(plan)
+        messages.success(request, f'Importación lista: {agregados} persona(s) agregada(s) y {completados} con datos completados.')
+        return redirect('list', table='personal')
+    if request.method == 'POST' and request.POST.get('accion') == 'cancelar':
+        request.session.pop('personal_import', None)
+        return redirect('list', table='personal')
+    if request.method == 'POST':
+        archivo = request.FILES.get('archivo')
+        if not archivo:
+            ctx['error'] = 'Elige el archivo Excel.'
+        elif not archivo.name.lower().endswith('.xlsx'):
+            ctx['error'] = 'El archivo debe ser un Excel .xlsx.'
+        else:
+            try:
+                plan = importar_personal.planificar(importar_personal.leer(archivo))
+            except importar_personal.ArchivoRechazado as e:
+                ctx['error'] = f'Archivo rechazado: {e}'
+            else:
+                plan['archivo'] = archivo.name
+                request.session['personal_import'] = plan
+                ctx['plan'] = plan
+    return render(request, 'panel/personal_import.html', ctx)
 
 
 def delete_view(request, table, pk):
